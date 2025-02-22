@@ -10,7 +10,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <main>
     <h1>Juridische Informatie rechtsmiddelen studenten</h1>
     <p>In het hoger beroepsonderwijs (HBO) en wetenschappelijk onderwijs (WO) zijn er verschillende procedures die je kunt volgen bij misstanden en onregelmatigheden.</p>
     <div>
@@ -47,5 +47,9 @@ export default {
       <OpenWebsiteButton :buttonText="'Landelijk Studenten Rechtsbureau'" :buttonLink="'https://www.lsr.nl/'" />
       <OpenWebsiteButton :buttonText="'Rechtshulp - ISO'" :buttonLink="'https://iso.nl/rechtshulp/'" />
     </div>
-  </div>
+  </main>
 </template>
+
+<style scoped>
+
+</style>
