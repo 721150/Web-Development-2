@@ -17,7 +17,7 @@
 
 <template>
   <div>
-    <button class="btn btn-success custom-btn" @click="openWebsite">{{ props.buttonText }}</button>
+    <button class="btn btn-success custom-btn mb-3" @click="openWebsite">{{ props.buttonText }}</button>
   </div>
 </template>
 

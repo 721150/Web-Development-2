@@ -5,15 +5,15 @@ import { RouterLink, RouterView } from 'vue-router';
 <template>
   <div>
     <header class="p-3 mb-4 border-bottom">
-      <div class="container d-flex flex-wrap justify-content-center">
-        <img alt="Vue logo" class="logo" src="@/assets/logo.jpeg" width="125" height="125" />
-        <h1>Studentenhulp</h1>
-        <nav class="nav nav-pills">
-          <RouterLink to="/legalInfo" class="nav-link" active-class="active">Informatie</RouterLink>
-          <RouterLink to="/blogs" class="nav-link" active-class="active">Blogs</RouterLink>
-          <RouterLink to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
-        </nav>
+      <div class="container d-flex flex-wrap align-items-center justify-content-center">
+        <img alt="Vue logo" class="me-3" src="@/assets/logo.jpeg" width="125" height="125" />
+        <h1 class="ms-3">Studentenhulp</h1>
       </div>
+      <nav class="nav nav-pills container d-flex flex-wrap justify-content-center mt-3">
+        <RouterLink to="/legalInfo" class="nav-link" active-class="active">Informatie</RouterLink>
+        <RouterLink to="/blogs" class="nav-link" active-class="active">Blogs</RouterLink>
+        <RouterLink to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
+      </nav>
     </header>
 
     <main class="container">
@@ -23,12 +23,8 @@ import { RouterLink, RouterView } from 'vue-router';
 </template>
 
 <style scoped>
-.logo {
-  margin-right: 20px;
-}
-
 .nav-link.active {
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
 }
 </style>

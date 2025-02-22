@@ -45,6 +45,7 @@ export default {
       <OpenWebsiteButton :buttonText="'Rechten & Plichten - LSVB'" :buttonLink="'https://lsvb.nl/dossiers/juridische-hulp/rechten-plichten/'" />
       <OpenWebsiteButton :buttonText="'Rechtsmiddelen - LSVB'" :buttonLink="'https://lsvb.nl/dossiers/juridische-hulp/rechtsmiddelen-2/'" />
       <OpenWebsiteButton :buttonText="'Landelijk Studenten Rechtsbureau'" :buttonLink="'https://www.lsr.nl/'" />
+      <OpenWebsiteButton :buttonText="'Rechtshulp - ISO'" :buttonLink="'https://iso.nl/rechtshulp/'" />
     </div>
   </div>
 </template>
