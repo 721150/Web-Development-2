@@ -1,18 +1,18 @@
 <script setup>
-  import { defineProps } from 'vue';
+import { defineProps } from 'vue';
 
-  const props = defineProps({
-    buttonText: {
-      type: String,
-    },
-    buttonLink: {
-      type: String,
-    }
-  });
-
-  function openWebsite() {
-    window.open(props.buttonLink, '_blank');
+const props = defineProps({
+  buttonText: {
+    type: String,
+  },
+  buttonLink: {
+    type: String,
   }
+});
+
+function openWebsite() {
+  window.open(props.buttonLink, '_blank');
+}
 </script>
 
 <template>

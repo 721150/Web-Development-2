@@ -1,4 +1,5 @@
 <script setup>
+import FieldDisplay from './FieldDisplay.vue';
 import { ref } from 'vue';
 import { defineProps, defineEmits } from 'vue';
 
@@ -16,7 +17,7 @@ function toggleComments() {
 
 function addComment() {
   if (newComment.value.trim() !== '') {
-    props.post.comments.push({ id: Date.now(), author: 'Anonieme Student', text: newComment.value });
+    props.post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
     newComment.value = '';
     emit('addComment', props.post.id);
   }
@@ -26,13 +27,16 @@ function addComment() {
 <template>
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">{{ post.title }}</h5>
+      <h5 class="card-title">{{ props.post.title }}</h5>
+      <FieldDisplay label="Tijd" :value="props.post.time" />
+      <FieldDisplay label="Instelling" :value="props.post.institution" />
+      <FieldDisplay label="Opleiding" :value="props.post.course" />
+      <FieldDisplay label="Onderwerp" :value="props.post.topic" />
+      <FieldDisplay label="Soort recht" :value="props.post.rightType" />
       <p class="card-text">{{ post.content }}</p>
-      <button class="btn btn-success" @click="toggleComments">{{ post.showComments ? 'Verberg reacties' : 'Toon reacties' }}</button>
-      <div v-if="post.showComments" class="mt-3">
-        <div v-for="comment in post.comments" :key="comment.id" class="mb-2">
-          <strong>{{ comment.author }}</strong>: {{ comment.text }}
-        </div>
+      <button class="btn btn-success" @click="toggleComments">{{ props.post.showComments ? 'Verberg reacties' : 'Toon reacties' }}</button>
+      <div v-if="props.post.showComments" class="mt-3">
+        <p v-for="comment in props.post.comments" :key="comment.id" class="mb-2">{{ comment.time }}: {{ comment.text }}</p>
         <input v-model="newComment" type="text" class="form-control mb-2" placeholder="Schrijf een reactie">
         <button class="btn btn-success" @click="addComment">Plaats reactie</button>
       </div>

@@ -24,7 +24,7 @@ function navigate() {
 </script>
 
 <template>
-  <button class="btn btn-success ms-3" @click="navigate">{{ buttonText }}</button>
+  <button class="btn btn-success ms-3" @click="navigate">{{ props.buttonText }}</button>
 </template>
 
 <style scoped>

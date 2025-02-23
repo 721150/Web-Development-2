@@ -26,9 +26,10 @@ const posts = ref([
     course: 'Opleiding X',
     topic: 'Onderwerp 1',
     rightType: 'Recht A',
+    time: '2025-02-23 12:00',
     comments: [
-      { id: 1, author: 'Student 1', text: 'Je kunt een verzoekschrift indienen.' },
-      { id: 2, author: 'Student 2', text: 'Raadpleeg het Studentenstatuut.' }
+      { id: 1, text: 'Je kunt een verzoekschrift indienen.', time: '2025-02-23 12:05' },
+      { id: 2, text: 'Raadpleeg het Studentenstatuut.', time: '2025-02-23 12:10' }
     ],
     showComments: false
   },
@@ -54,7 +55,7 @@ function toggleComments(postId) {
 function addComment(postId) {
   const post = posts.value.find(p => p.id === postId);
   if (newComment.value.trim() !== '') {
-    post.comments.push({ id: Date.now(), author: 'Anonieme Student', text: newComment.value });
+    post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
     newComment.value = '';
   }
 }
