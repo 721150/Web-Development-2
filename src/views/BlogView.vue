@@ -59,11 +59,6 @@ function addComment(postId) {
     newComment.value = '';
   }
 }
-
-function createNewPost() {
-  // Logica voor het maken van een nieuwe post
-  console.log('Nieuwe post maken');
-}
 </script>
 
 <template>
@@ -71,7 +66,7 @@ function createNewPost() {
     <div class="p-3 mb-4 border-bottom">
       <div class="container d-flex flex-wrap align-items-center justify-content-center">
         <h1 class="ms-3">Studentenrechten Blog</h1>
-        <NavigationButton buttonText="Nieuw bericht" buttonLink="/new-post" @navigate="createNewPost" />
+        <NavigationButton buttonText="Nieuw bericht" buttonLink="/new-post" />
       </div>
       <div class="container mt-3">
         <SearchInput v-model="searchQuery" />
