@@ -13,7 +13,9 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: LegalInfoView,
+      beforeEnter: (to, from, next) => {
+        next('/legalInfo');
+      },
     },
     {
       path: '/legalInfo',

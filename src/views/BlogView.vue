@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import axios from '@/axios-auth.js';
 import SearchInput from '../components/SearchInput.vue';
 import FilterSelect from '../components/FilterSelect.vue';
 import NavigationButton from '../components/NavigationButton.vue';
@@ -7,53 +8,69 @@ import PostComponent from '../components/PostComponent.vue';
 
 const searchQuery = ref('');
 const selectedInstitution = ref('');
-const selectedCourse = ref('');
-const selectedTopic = ref('');
-const selectedRightType = ref('');
+const selectedEducation = ref('');
+const selectedSubject = ref('');
+const selectedTypeOfLaw = ref('');
 const newComment = ref('');
 
-const institutions = ['Instelling A', 'Instelling B', 'Instelling C'];
-const courses = ['Opleiding X', 'Opleiding Y', 'Opleiding Z'];
-const topics = ['Onderwerp 1', 'Onderwerp 2', 'Onderwerp 3'];
-const rightTypes = ['Recht A', 'Recht B', 'Recht C'];
+const institutions = ref([]);
+const educations = ref([]);
+const subjects = ref([]);
+const typeOfLow = ref([]);
+const blogs = ref([]);
 
-const posts = ref([
-  {
-    id: 1,
-    title: 'Vraag over examencommissie',
-    content: 'Hoe kan ik bezwaar maken tegen een beslissing van de examencommissie?',
-    institution: 'Instelling A',
-    course: 'Opleiding X',
-    topic: 'Onderwerp 1',
-    rightType: 'Recht A',
-    time: '2025-02-23 12:00',
-    comments: [
-      { id: 1, text: 'Je kunt een verzoekschrift indienen.', time: '2025-02-23 12:05' },
-      { id: 2, text: 'Raadpleeg het Studentenstatuut.', time: '2025-02-23 12:10' }
-    ],
-    showComments: false
-  },
-]);
+const filteredBlogs = computed(() => {
+  const query = searchQuery.value.toLowerCase();
 
-const filteredPosts = computed(() => {
-  return posts.value.filter(post => {
+  return blogs.value.filter(blog => {
+    // Filteren op zoekopdracht
+    const matchesSearchQuery = query === '' ||
+      blog.description.toLowerCase().includes(query) ||
+      blog.content.toLowerCase().includes(query) ||
+      blog.institution.name.toLowerCase().includes(query) ||
+      blog.education.name.toLowerCase().includes(query) ||
+      blog.subject.description.toLowerCase().includes(query) ||
+      blog.typeOfLaw.description.toLowerCase().includes(query);
+
+    // Filteren op selectie (en zoekopdracht)
     return (
-      (selectedInstitution.value === '' || post.institution === selectedInstitution.value) &&
-      (selectedCourse.value === '' || post.course === selectedCourse.value) &&
-      (selectedTopic.value === '' || post.topic === selectedTopic.value) &&
-      (selectedRightType.value === '' || post.rightType === selectedRightType.value) &&
-      (searchQuery.value === '' || post.title.includes(searchQuery.value) || post.content.includes(searchQuery.value))
+      (selectedInstitution.value === '' || blog.institution.name === selectedInstitution.value) &&
+      (selectedEducation.value === '' || blog.education.name === selectedEducation.value) &&
+      (selectedSubject.value === '' || blog.subject.description === selectedSubject.value) &&
+      (selectedTypeOfLaw.value === '' || blog.typeOfLaw.description === selectedTypeOfLaw.value) &&
+      matchesSearchQuery
     );
   });
 });
 
+onMounted(async () => {
+  try {
+    const institutionsResponse = await axios.get('/institutions');
+    institutions.value = institutionsResponse.data;
+
+    const educationsResponse = await axios.get('/educations');
+    educations.value = educationsResponse.data;
+
+    const subjectsResponse = await axios.get('/subjects');
+    subjects.value = subjectsResponse.data;
+
+    const typesOfLowsResponse = await axios.get('/typesOfLows');
+    typeOfLow.value = typesOfLowsResponse.data;
+
+    const blogsResponse = await axios.get('/blogs');
+    blogs.value = blogsResponse.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
+
 function toggleComments(postId) {
-  const post = posts.value.find(p => p.id === postId);
+  const post = blogs.value.find(p => p.id === postId);
   post.showComments = !post.showComments;
 }
 
 function addComment(postId) {
-  const post = posts.value.find(p => p.id === postId);
+  const post = blogs.value.find(p => p.id === postId);
   if (newComment.value.trim() !== '') {
     post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
     newComment.value = '';
@@ -72,15 +89,15 @@ function addComment(postId) {
         <SearchInput v-model="searchQuery" />
         <div class="d-flex justify-content-between">
           <FilterSelect v-model="selectedInstitution" :options="institutions" defaultOptionText="Instelling" />
-          <FilterSelect v-model="selectedCourse" :options="courses" defaultOptionText="Opleiding" />
-          <FilterSelect v-model="selectedTopic" :options="topics" defaultOptionText="Onderwerp" />
-          <FilterSelect v-model="selectedRightType" :options="rightTypes" defaultOptionText="Soort recht" />
+          <FilterSelect v-model="selectedEducation" :options="educations" defaultOptionText="Opleiding" />
+          <FilterSelect v-model="selectedSubject" :options="subjects" defaultOptionText="Onderwerp" />
+          <FilterSelect v-model="selectedTypeOfLaw" :options="typeOfLow" defaultOptionText="Soort recht" />
         </div>
       </div>
     </div>
 
     <div class="container">
-      <PostComponent v-for="post in filteredPosts" :key="post.id" :post="post" @addComment="addComment"/>
+      <PostComponent v-for="blog in filteredBlogs" :key="blog.id" :blog="blog" @addComment="addComment"/>
     </div>
   </main>
 </template>

@@ -1,42 +1,76 @@
 <script setup>
 import FieldDisplay from './FieldDisplay.vue';
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { defineProps, defineEmits } from 'vue';
+import axios from '@/axios-auth.js';
 
 const props = defineProps({
-  post: Object
+  blog: Object
 });
+
+const blog = reactive(props.blog);
 
 const emit = defineEmits(['addComment']);
 
 const newComment = ref('');
 
 function toggleComments() {
-  props.post.showComments = !props.post.showComments;
+  blog.showComments = !blog.showComments;
 }
 
-function addComment() {
+async function addComment() {
   if (newComment.value.trim() !== '') {
-    props.post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
-    newComment.value = '';
-    emit('addComment', props.post.id);
+    const reactie = {
+      dateTime: new Date().toISOString(),
+      content: newComment.value
+    };
+
+    try {
+      const response = await axios.post('/reacties', {
+        blogId: blog.id,
+        reactie: reactie
+      });
+      if (!blog.reacties) {
+        blog.reacties = [];
+      }
+      blog.reacties.push(response.data);
+      newComment.value = '';
+      emit('addComment', blog.id);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   }
+}
+
+function formatDateTime(dateTime) {
+  const options = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
+  return new Intl.DateTimeFormat('nl-NL', options).format(new Date(dateTime)).replace(',', '');
 }
 </script>
 
 <template>
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">{{ props.post.title }}</h5>
-      <FieldDisplay label="Tijd" :value="props.post.time" />
-      <FieldDisplay label="Instelling" :value="props.post.institution" />
-      <FieldDisplay label="Opleiding" :value="props.post.course" />
-      <FieldDisplay label="Onderwerp" :value="props.post.topic" />
-      <FieldDisplay label="Soort recht" :value="props.post.rightType" />
-      <p class="card-text">{{ post.content }}</p>
-      <button class="btn btn-success" @click="toggleComments">{{ props.post.showComments ? 'Verberg reacties' : 'Toon reacties' }}</button>
-      <div v-if="props.post.showComments" class="mt-3">
-        <p v-for="comment in props.post.comments" :key="comment.id" class="mb-2">{{ comment.time }}: {{ comment.text }}</p>
+      <h5 class="card-title">{{ blog.title }}</h5>
+      <FieldDisplay label="Tijd" :value="formatDateTime(blog.dateTime)" />
+      <FieldDisplay label="Instelling" :value="blog.institution.name" />
+      <FieldDisplay label="Opleiding" :value="blog.education.name" />
+      <FieldDisplay label="Onderwerp" :value="blog.subject.description" />
+      <FieldDisplay label="Soort recht" :value="blog.typeOfLaw.description" />
+      <FieldDisplay label="Beschrijving" :value="blog.description" />
+      <p class="card-text">{{ blog.content }}</p>
+      <button class="btn btn-success" @click="toggleComments">{{
+          blog.showComments ? 'Verberg reacties' : 'Toon reacties'
+        }}</button>
+      <div v-if="blog.showComments" class="mt-3">
+        <p v-for="reactie in blog.reacties" :key="reactie.id" class="mb-2">{{ formatDateTime(reactie.dateTime) }}: {{ reactie.content }}</p>
         <input v-model="newComment" type="text" class="form-control mb-2" placeholder="Schrijf een reactie">
         <button class="btn btn-success" @click="addComment">Plaats reactie</button>
       </div>

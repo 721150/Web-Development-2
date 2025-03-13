@@ -21,7 +21,7 @@ function updateValue(event) {
 <template>
   <select :value="modelValue" @input="updateValue" class="form-select me-2">
     <option :value="defaultOptionValue">{{ defaultOptionText }}</option>
-    <option v-for="option in options" :key="option" :value="option">{{ option }}</option>
+    <option v-for="option in options" :key="option.id" :value="option.name || option.description">{{ option.name || option.description }}</option>
   </select>
 </template>
 
