@@ -29,10 +29,7 @@ async function login() {
   <div class="container mt-5">
     <h2>Inloggen</h2>
     <InputField v-model="email" label="E-mailadres" type="email" placeholder="E-mailadres" />
-    <div class="mb-3">
-      <label for="password" class="form-label">Wachtwoord</label>
-      <input v-model="password" type="password" class="form-control" id="password" placeholder="Wachtwoord">
-    </div>
+    <InputField label="Wachtwoord" v-model="password" type="password" placeholder="Wachtwoord" />
     <button class="btn btn-success" @click="login">Inloggen</button>
     <div v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</div>
   </div>
