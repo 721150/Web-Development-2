@@ -66,9 +66,7 @@ function formatDateTime(dateTime) {
       <FieldDisplay label="Soort recht" :value="blog.typeOfLaw.description" />
       <FieldDisplay label="Beschrijving" :value="blog.description" />
       <p class="card-text">{{ blog.content }}</p>
-      <button class="btn btn-success" @click="toggleComments">{{
-          blog.showComments ? 'Verberg reacties' : 'Toon reacties'
-        }}</button>
+      <button class="btn btn-success" @click="toggleComments">{{ blog.showComments ? 'Verberg reacties' : 'Toon reacties' }}</button>
       <div v-if="blog.showComments" class="mt-3">
         <p v-for="reactie in blog.reacties" :key="reactie.id" class="mb-2">{{ formatDateTime(reactie.dateTime) }}: {{ reactie.content }}</p>
         <input v-model="newComment" type="text" class="form-control mb-2" placeholder="Schrijf een reactie">

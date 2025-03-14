@@ -1,22 +1,26 @@
 <script setup>
-import { defineProps } from 'vue';
+import { defineEmits, defineProps } from 'vue';
 
-defineProps({
+const props = defineProps({
   label: String,
-  modelValue: String,
+  modelValue: Object,
   options: Array
 });
 
+const emit = defineEmits(['update:modelValue']);
+
 function updateValue(event) {
-  emit('update:modelValue', event.target.value);
+  const selectedOption = props.options.find(option => option.id === parseInt(event.target.value));
+  emit('update:modelValue', selectedOption);
 }
 </script>
 
 <template>
   <div class="mb-3">
     <label :for="label" class="form-label">{{ label }}</label>
-    <select :id="label" class="form-select" :value="modelValue" @input="updateValue">
-      <option v-for="option in options" :key="option" :value="option">{{ option }}</option>
+    <select :id="label" class="form-select" @change="updateValue">
+      <option value="">Selecteer een optie</option>
+      <option v-for="option in options" :key="option.id" :value="option.id">{{ option.name || option.description }}</option>
     </select>
   </div>
 </template>

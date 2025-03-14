@@ -5,6 +5,7 @@ import SearchInput from '../components/SearchInput.vue';
 import FilterSelect from '../components/FilterSelect.vue';
 import NavigationButton from '../components/NavigationButton.vue';
 import PostComponent from '../components/PostComponent.vue';
+import ErrorModal from "@/components/ErrorModal.vue";
 
 const searchQuery = ref('');
 const selectedInstitution = ref('');
@@ -18,6 +19,9 @@ const educations = ref([]);
 const subjects = ref([]);
 const typeOfLow = ref([]);
 const blogs = ref([]);
+
+const errorMessage = ref('');
+const showErrorModal = ref(false);
 
 const filteredBlogs = computed(() => {
   const query = searchQuery.value.toLowerCase();
@@ -60,7 +64,12 @@ onMounted(async () => {
     const blogsResponse = await axios.get('/blogs');
     blogs.value = blogsResponse.data;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    if (error.response) {
+      errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.message}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
+    showErrorModal.value = true;
   }
 });
 
@@ -75,6 +84,10 @@ function addComment(postId) {
     post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
     newComment.value = '';
   }
+}
+
+function closeErrorModal() {
+  showErrorModal.value = false;
 }
 </script>
 
@@ -100,6 +113,7 @@ function addComment(postId) {
       <PostComponent v-for="blog in filteredBlogs" :key="blog.id" :blog="blog" @addComment="addComment"/>
     </div>
   </main>
+  <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
 </template>
 
 <style scoped>
