@@ -1,43 +1,116 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from '@/axios-auth.js';
 import InputField from '../components/InputField.vue';
 import QuestionList from '../components/QuestionList.vue';
+import SelectField from "@/components/SelectField.vue";
 
-const firstname = ref('John');
-const lastname = ref('Doe');
-const email = ref('john.doe@example.com');
+const firstname = ref('');
+const lastname = ref('');
+const email = ref('');
+const institution = ref('');
+const phone = ref('');
+const image = ref('');
+const placeholderImage = 'src/assets/placeholder.jpg';
 
-const openQuestions = ref([
-  { id: 1, question: 'How can I appeal a decision by the exam committee?', status: 'open' },
-  { id: 2, question: 'What are my rights regarding exam retakes?', status: 'open' }
-]);
+const openQuestions = ref([]);
+const handledQuestions = ref([]);
 
-const handledQuestions = ref([
-  { id: 3, question: 'How do I request a transcript?', status: 'handled' },
-  { id: 4, question: 'What is the process for changing my major?', status: 'handled' }
-]);
+const institutions = ref([]);
+const educations = ref([]);
+const typeOfLaws = ref([]);
+const subjects = ref([]);
+const errorMessage = ref('');
+const showErrorModal = ref(false);
 
-function updateProfile() {
-  console.log('Profile updated:', {
-    firstname: firstname.value,
-    lastname: lastname.value,
-    email: email.value
-  });
+async function fetchData() {
+  try {
+    const profileResponse = await axios.get('/users/2');
+    //const questionsResponse = await axios.get('/questions');
+
+    firstname.value = profileResponse.data.firstname;
+    lastname.value = profileResponse.data.lastname;
+    email.value = profileResponse.data.email;
+    institution.value = profileResponse.data.institution.id;
+    phone.value = profileResponse.data.phone;
+    image.value = profileResponse.data.image;
+
+    //openQuestions.value = questionsResponse.data.filter(q => q.status === 'open');
+    //handledQuestions.value = questionsResponse.data.filter(q => q.status === 'handled');
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
 }
 
-function deleteProfile() {
-  console.log('Profile deleted');
+onMounted(() => {
+  fetchData();
+});
+
+async function updateProfile() {
+  try {
+    await axios.put('/profile', {
+      firstname: firstname.value,
+      lastname: lastname.value,
+      email: email.value
+    });
+    console.log('Profile updated');
+  } catch (error) {
+    console.error('Error updating profile:', error);
+  }
+}
+
+async function deleteProfile() {
+  try {
+    await axios.delete('/profile');
+    console.log('Profile deleted');
+  } catch (error) {
+    console.error('Error deleting profile:', error);
+  }
+}
+
+onMounted(async () => {
+  try {
+    const institutionsResponse = await axios.get('/institutions');
+    institutions.value = institutionsResponse.data;
+
+    const educationsResponse = await axios.get('/educations');
+    educations.value = educationsResponse.data;
+
+    const subjectsResponse = await axios.get('/subjects');
+    subjects.value = subjectsResponse.data;
+
+    const typesOfLowsResponse = await axios.get('/typesOfLows');
+    typeOfLaws.value = typesOfLowsResponse.data;
+  } catch (error) {
+    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage()}`;
+    showErrorModal.value = true;
+  }
+});
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    image.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 </script>
 
 <template>
   <div class="container mt-5">
     <h2>Mijn Gegevens</h2>
+    <img :src="image || placeholderImage" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
+    <input type="file" @change="handleImageUpload" class="form-control mb-3" accept="image/*">
     <InputField label="Voornaam" v-model="firstname" placeholder="Voornaam" />
     <InputField label="Achternaam" v-model="lastname" placeholder="Achternaam" />
     <InputField label="E-mailadres" v-model="email" type="email" placeholder="E-mailadres" />
-    <button class="btn btn-primary" @click="updateProfile">Gegevens Bijwerken</button>
-    <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>
+    <SelectField label="Instelling" v-model="institution" :options="institutions" />
+    <InputField label="phone" v-model="phone" placeholder="Telefoonnummer" />
+    <div class="d-flex gap-2 mt-4">
+      <button class="btn btn-primary" @click="updateProfile">Gegevens Bijwerken</button>
+      <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>
+    </div>
 
     <QuestionList title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />
     <QuestionList title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
@@ -45,5 +118,10 @@ function deleteProfile() {
 </template>
 
 <style scoped>
-
+.profile-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
 </style>

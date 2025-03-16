@@ -9,18 +9,14 @@ const errorMessage = ref('');
 
 async function login() {
   try {
-    const response = await axios.post('/users', {
+    const response = await axios.get('/users/login', {
       email: email.value,
       password: password.value
     });
     console.log('Inloggen succesvol:', response.data);
     // Hier kun je de gebruiker doorverwijzen naar een andere pagina of de inlogstatus opslaan
   } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Fout: ${error.response.data.message}`;
-    } else {
-      errorMessage.value = 'Er is een fout opgetreden bij het inloggen.';
-    }
+    errorMessage.value = `Fout: ${error.response.data.errorMessage}`;
   }
 }
 </script>

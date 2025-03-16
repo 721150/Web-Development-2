@@ -111,11 +111,7 @@ onMounted(async () => {
     const typesOfLowsResponse = await axios.get('/typesOfLows');
     typeOfLaws.value = typesOfLowsResponse.data;
   } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.message}`;
-    } else {
-      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
-    }
+    errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.errorMessage()}`;
     showErrorModal.value = true;
   }
 });
