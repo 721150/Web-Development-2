@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps } from 'vue';
+import {defineEmits, defineProps} from 'vue';
 
 const props = defineProps({
   label: String,
@@ -10,6 +10,8 @@ const props = defineProps({
   },
   placeholder: String
 });
+
+const emit = defineEmits(['update:modelValue']);
 
 function updateValue(event) {
   emit('update:modelValue', event.target.value);
