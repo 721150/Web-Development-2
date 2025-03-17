@@ -4,6 +4,7 @@ import axios from '@/axios-auth.js';
 import InputField from '../components/InputField.vue';
 import QuestionList from '../components/QuestionList.vue';
 import SelectField from "@/components/SelectField.vue";
+import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 
 const firstname = ref('');
 const lastname = ref('');
@@ -23,10 +24,15 @@ const subjects = ref([]);
 const errorMessage = ref('');
 const showErrorModal = ref(false);
 
+const isHandler = ref(false);
+const isApplicant = ref(false);
+const handlerTypeOfLaws = ref([]);
+const handlerSubjects = ref([]);
+const applicantEducation = ref('');
+
 async function fetchData() {
   try {
-    const profileResponse = await axios.get('/users/2');
-    //const questionsResponse = await axios.get('/questions');
+    const profileResponse = await axios.get('/users/4'); //TODO aanpassen naar het id van de ingelogde gebruiker
 
     firstname.value = profileResponse.data.firstname;
     lastname.value = profileResponse.data.lastname;
@@ -35,8 +41,20 @@ async function fetchData() {
     phone.value = profileResponse.data.phone;
     image.value = profileResponse.data.image;
 
-    //openQuestions.value = questionsResponse.data.filter(q => q.status === 'open');
-    //handledQuestions.value = questionsResponse.data.filter(q => q.status === 'handled');
+    if (profileResponse.data.typeOfLaws && profileResponse.data.subjects) {
+      isHandler.value = true;
+      handlerTypeOfLaws.value = profileResponse.data.typeOfLaws;
+      handlerSubjects.value = profileResponse.data.subjects;
+    }
+
+    if (profileResponse.data.education) {
+      isApplicant.value = true;
+      applicantEducation.value = profileResponse.data.education.id;
+    }
+
+    // const questionsResponse = await axios.get('/questions');
+    // openQuestions.value = questionsResponse.data.filter(q => q.status === 'open');
+    // handledQuestions.value = questionsResponse.data.filter(q => q.status === 'handled');
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -107,6 +125,19 @@ function handleImageUpload(event) {
     <InputField label="E-mailadres" v-model="email" type="email" placeholder="E-mailadres" />
     <SelectField label="Instelling" v-model="institution" :options="institutions" />
     <InputField label="phone" v-model="phone" placeholder="Telefoonnummer" />
+
+    <!-- Velden voor de behandelaar -->
+    <div v-if="isHandler">
+      <h3>Behandelaar Gegevens</h3>
+      <CheckboxGroupField label="Soorten Recht" v-model="handlerTypeOfLaws" :options="typeOfLaws" />
+      <CheckboxGroupField label="Onderwerpen" v-model="handlerSubjects" :options="subjects" />
+    </div>
+
+    <!-- Velden voor de indiener -->
+    <div v-if="isApplicant">
+      <SelectField label="Opleiding" v-model="applicantEducation" :options="educations" disabled />
+    </div>
+
     <div class="d-flex gap-2 mt-4">
       <button class="btn btn-primary" @click="updateProfile">Gegevens Bijwerken</button>
       <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>

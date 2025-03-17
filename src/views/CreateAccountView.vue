@@ -43,17 +43,27 @@ function closeErrorModal() {
 }
 
 const submitForm = async () => {
+  const selectedInstitution = institutions.value.find(inst => inst.id === parseInt(user.value.institution));
+  const selectedEducation = educations.value.find(edu => edu.id === parseInt(user.value.education));
+  console.log(selectedInstitution.value);
+
   const data = {
     firstname: user.value.firstname,
     lastname: user.value.lastname,
     email: user.value.email,
     password: user.value.password,
     institution: {
-      id: user.value.institution.id,
-      name: user.value.institution.name
+      id: user.value.institution,
+      name:  selectedInstitution.name
     },
     phone: user.value.phone,
-    image: null
+    image: null,
+    education: selectedEducation ? {
+      id: user.value.education,
+      name: selectedEducation.name
+    } : null,
+    typeOfLaws: user.value.typeOfLaws,
+    subjects: user.value.subjects
   };
 
   if (user.value.image) {
@@ -61,30 +71,17 @@ const submitForm = async () => {
     reader.onloadend = async function() {
       data.image = reader.result.replace("data:", "").replace(/^.+,/, "");
 
-      if (role.value === 'applicant') {
-        data.education = user.value.education;
-      } else if (role.value === 'handler') {
-        data.typeOfLaws = user.value.typeOfLaws;
-        data.subjects = user.value.subjects;
-      }
-
       await sendJsonData(data);
     };
     reader.readAsDataURL(user.value.image);
   } else {
-    if (role.value === 'applicant') {
-      data.education = user.value.education;
-    } else if (role.value === 'handler') {
-      data.typeOfLaws = user.value.typeOfLaws;
-      data.subjects = user.value.subjects;
-    }
-
     await sendJsonData(data);
   }
 };
 
 const sendJsonData = async (data) => {
   try {
+    console.log(JSON.stringify(data))
     const response = await axios.post('/users/' + role.value, JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json'
