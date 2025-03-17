@@ -40,11 +40,7 @@ onMounted(async () => {
     const typesOfLawsResponse = await axios.get('/typesOfLows');
     typesOfLaws.value = typesOfLawsResponse.data;
   } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.message}`;
-    } else {
-      errorMessage.value = 'Er is een fout opgetreden bij het ophalen van de gegevens.';
-    }
+    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.message}`;
     showErrorModal.value = true;
   }
 });
@@ -82,11 +78,28 @@ async function createPost() {
   }
 
   try {
+    const selectedInstitution = institutions.value.find(inst => inst.id === parseInt(institution.value));
+    const selectedEducation = educations.value.find(edu => edu.id === parseInt(education.value));
+    const selectedSubject = subjects.value.find(sub => sub.id === parseInt(subject.value));
+    const selectedTypeOfLaw = typesOfLaws.value.find(type => type.id === parseInt(typeOfLaw.value));
+
     const newPost = {
-      institution: institution.value,
-      education: education.value,
-      subject: subject.value,
-      typeOfLaw: typeOfLaw.value,
+      institution: {
+        id: institution.value,
+        name: selectedInstitution.name
+      },
+      education: {
+        id: education.value,
+        name: selectedEducation.name
+      },
+      subject: {
+        id: subject.value,
+        description: selectedSubject.description
+      },
+      typeOfLaw: {
+        id: typeOfLaw.value,
+        description: selectedTypeOfLaw.description
+      },
       description: description.value,
       content: content.value,
     };
@@ -96,11 +109,7 @@ async function createPost() {
     errorMessage.value = '';
     showModal.value = true;
   } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.message}`;
-    } else {
-      errorMessage.value = 'Er is een fout opgetreden bij het aanmaken van de blog.';
-    }
+    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.message}`;
     showErrorModal.value = true;
   }
 }

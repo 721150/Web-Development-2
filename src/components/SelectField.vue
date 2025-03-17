@@ -19,7 +19,7 @@ function updateValue(event) {
     <label :for="label" class="form-label">{{ label }}</label>
     <select :id="label" class="form-select" @change="updateValue" :value="modelValue">
       <option value="">Selecteer een optie</option>
-      <option v-for="option in options" :key="option.id" :value="option.id">{{ option.name }}</option>
+      <option v-for="option in options" :key="option.id" :value="option.id">{{ option.name || option.description }}</option>
     </select>
   </div>
 </template>

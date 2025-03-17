@@ -1,7 +1,7 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue';
 
-const props = defineProps({
+defineProps({
   showModal: Boolean,
   createdPost: Object
 });
@@ -18,7 +18,7 @@ function goToBlogs() {
 </script>
 
 <template>
-  <div v-if="showModal" class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
+  <div v-if="showModal && createdPost !== null" class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content text-black">
         <div class="modal-header">
