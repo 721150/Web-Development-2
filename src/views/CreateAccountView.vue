@@ -45,7 +45,6 @@ function closeErrorModal() {
 const submitForm = async () => {
   const selectedInstitution = institutions.value.find(inst => inst.id === parseInt(user.value.institution));
   const selectedEducation = educations.value.find(edu => edu.id === parseInt(user.value.education));
-  console.log(selectedInstitution.value);
 
   const data = {
     firstname: user.value.firstname,

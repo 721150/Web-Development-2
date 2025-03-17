@@ -6,6 +6,7 @@ import QuestionList from '../components/QuestionList.vue';
 import SelectField from "@/components/SelectField.vue";
 import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 
+const id = ref(43);
 const firstname = ref('');
 const lastname = ref('');
 const email = ref('');
@@ -29,10 +30,11 @@ const isApplicant = ref(false);
 const handlerTypeOfLaws = ref([]);
 const handlerSubjects = ref([]);
 const applicantEducation = ref('');
+const userId = ref('');
 
 async function fetchData() {
   try {
-    const profileResponse = await axios.get('/users/4'); //TODO aanpassen naar het id van de ingelogde gebruiker
+    const profileResponse = await axios.get('/users/' + id.value); //TODO aanpassen naar het id van de ingelogde gebruiker
 
     firstname.value = profileResponse.data.firstname;
     lastname.value = profileResponse.data.lastname;
@@ -45,11 +47,13 @@ async function fetchData() {
       isHandler.value = true;
       handlerTypeOfLaws.value = profileResponse.data.typeOfLaws;
       handlerSubjects.value = profileResponse.data.subjects;
+      userId.value = profileResponse.data.userId;
     }
 
     if (profileResponse.data.education) {
       isApplicant.value = true;
       applicantEducation.value = profileResponse.data.education.id;
+      userId.value = profileResponse.data.userId;
     }
 
     // const questionsResponse = await axios.get('/questions');
@@ -66,12 +70,39 @@ onMounted(() => {
 
 async function updateProfile() {
   try {
-    await axios.put('/profile', {
+    const institutionName = institutions.value.find(inst => inst.id === parseInt(institution.value));
+    const educationName = educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
+
+    const data = {
+      id: id.value,
       firstname: firstname.value,
       lastname: lastname.value,
-      email: email.value
-    });
-    console.log('Profile updated');
+      email: email.value,
+      institution: {
+        id: institution.value,
+        name: institutionName.name,
+      },
+      phone: phone.value,
+      image: image.value
+    };
+
+    if (isHandler.value) {
+      data.typeOfLaws = handlerTypeOfLaws.value;
+      data.subjects = handlerSubjects.value;
+      data.userId = userId.value;
+    }
+
+    if (isApplicant.value) {
+      data.education = {
+        id: applicantEducation.value,
+        name: educationName.name
+      };
+      data.userId = userId.value;
+    }
+
+    const response = await axios.put('/users/' + id.value, data);
+
+    console.log('Profile updated: ' + response.data);
   } catch (error) {
     console.error('Error updating profile:', error);
   }
@@ -79,7 +110,7 @@ async function updateProfile() {
 
 async function deleteProfile() {
   try {
-    await axios.delete('/profile');
+    await axios.delete('/users/' + id.value);
     console.log('Profile deleted');
   } catch (error) {
     console.error('Error deleting profile:', error);
