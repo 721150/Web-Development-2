@@ -1,5 +1,14 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
+import {RouterLink, RouterView, useRouter} from 'vue-router';
+import { useAuthStore } from "@/stores/auth.js";
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+function handleLogout() {
+  authStore.logout();
+  router.push("/login");
+}
 </script>
 
 <template>
@@ -14,6 +23,8 @@ import { RouterLink, RouterView } from 'vue-router';
         <RouterLink to="/blogs" class="nav-link" active-class="active">Blogs</RouterLink>
         <RouterLink to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
         <RouterLink to="/account" class="nav-link" active-class="active">Account</RouterLink>
+        <button v-if="authStore.isLoggedIn" @click="handleLogout" class="nav-link btn btn-link">Uitloggen</button>
+        <RouterLink v-else to="/login" class="nav-link" active-class="active">Inloggen</RouterLink>
       </nav>
     </header>
 

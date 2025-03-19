@@ -1,24 +1,30 @@
 <script setup>
-import { ref } from 'vue';
-import axios from '@/axios-auth.js';
+import { onMounted, ref} from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import InputField from "@/components/InputField.vue";
+import {useRouter} from "vue-router";
 
 const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
 
+const authStore = useAuthStore();
+const router = useRouter();
+
 async function login() {
   try {
-    const response = await axios.get('/users/login', {
-      email: email.value,
-      password: password.value
-    });
-    console.log('Inloggen succesvol:', response.data);
-    // Hier kun je de gebruiker doorverwijzen naar een andere pagina of de inlogstatus opslaan
+    await authStore.login(email.value, password.value);
+    router.push('/account');
   } catch (error) {
-    errorMessage.value = `Fout: ${error.response.data.errorMessage}`;
+    errorMessage.value = `Fout: ${authStore.error || error.message}`;
   }
 }
+
+onMounted(() => {
+  if (authStore.isLoggedIn) {
+    router.push('/account');
+  }
+})
 </script>
 
 <template>
@@ -32,4 +38,5 @@ async function login() {
 </template>
 
 <style scoped>
+
 </style>

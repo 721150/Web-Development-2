@@ -5,8 +5,13 @@ import InputField from '../components/InputField.vue';
 import QuestionList from '../components/QuestionList.vue';
 import SelectField from "@/components/SelectField.vue";
 import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
+import { useAuthStore } from "@/stores/auth.js";
+import { useRouter } from "vue-router";
 
-const id = ref(43);
+const router = useRouter();
+const authStore = useAuthStore();
+
+const id = ref('');
 const firstname = ref('');
 const lastname = ref('');
 const email = ref('');
@@ -34,7 +39,7 @@ const userId = ref('');
 
 async function fetchData() {
   try {
-    const profileResponse = await axios.get('/users/' + id.value); //TODO aanpassen naar het id van de ingelogde gebruiker
+    const profileResponse = await axios.get('/users/' + id.value);
 
     firstname.value = profileResponse.data.firstname;
     lastname.value = profileResponse.data.lastname;
@@ -63,10 +68,6 @@ async function fetchData() {
     console.error('Error fetching data:', error);
   }
 }
-
-onMounted(() => {
-  fetchData();
-});
 
 async function updateProfile() {
   try {
@@ -118,6 +119,11 @@ async function deleteProfile() {
 }
 
 onMounted(async () => {
+  if (!authStore.isLoggedIn) {
+    router.push('/login');
+    return;
+  }
+
   try {
     const institutionsResponse = await axios.get('/institutions');
     institutions.value = institutionsResponse.data;
@@ -134,6 +140,9 @@ onMounted(async () => {
     errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage()}`;
     showErrorModal.value = true;
   }
+
+  id.value = authStore.userId;
+  fetchData();
 });
 
 function handleImageUpload(event) {
