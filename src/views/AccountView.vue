@@ -7,6 +7,7 @@ import SelectField from "@/components/SelectField.vue";
 import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
+import ErrorModal from "@/components/ErrorModal.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -153,6 +154,10 @@ function handleImageUpload(event) {
   };
   reader.readAsDataURL(file);
 }
+
+function closeErrorModal() {
+  showErrorModal.value = false;
+}
 </script>
 
 <template>
@@ -185,6 +190,8 @@ function handleImageUpload(event) {
 
     <QuestionList title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />
     <QuestionList title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
+
+    <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
   </div>
 </template>
 
