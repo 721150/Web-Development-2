@@ -33,7 +33,7 @@ onMounted(async () => {
     router.push('/login');
     return;
   }
-  
+
   try {
     const institutionsResponse = await axios.get('/institutions');
     institutions.value = institutionsResponse.data;

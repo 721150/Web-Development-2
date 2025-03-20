@@ -49,7 +49,7 @@ const router = createRouter({
       component: LoginPage,
     },
     {
-      path: '/dossier',
+      path: '/dossier/:id',
       name: 'dossier',
       component: DossierView,
     },

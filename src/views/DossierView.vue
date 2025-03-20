@@ -1,52 +1,40 @@
 <script setup>
-import {onMounted, reactive, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import GeneralInfo from "../components/GeneralInfo.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
+import axios from "@/axios-auth.js";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
-const request = reactive({
-  submitter: 'Jan Jansen',
-  handler: 'Piet Pietersen',
-  institution: 'Universiteit van Amsterdam',
-  course: 'Rechten',
-  subject: 'Examens',
-  type: 'Beroeps',
-  question: 'Wanneer kan ik beroep indienen?',
-  documents: [
-    { id: 1, name: 'Contract.pdf' },
-    { id: 2, name: 'Voorwaarden.docx' }
-  ],
-  communication: [
-    { id: 1, sender: 'Jan Jansen', text: 'Kunt u mij meer informatie geven over een beroep?' },
-    { id: 2, sender: 'Piet Pietersen', text: 'Natuurlijk, ik zal de informatie zo snel mogelijk verstrekken.' }
-  ],
-  status: 'open'
-});
+const request = ref([]);
 
 const newMessage = ref('');
-
-function sendMessage() {
-  if (newMessage.value.trim() !== '') {
-    request.communication.push({
-      id: request.communication.length + 1,
-      sender: 'Ik',
-      text: newMessage.value
-    });
-    newMessage.value = '';
-  }
-}
-
-function updateStatus() {
-  alert(`Status bijgewerkt naar: ${request.status}`);
-}
 
 onMounted( async () => {
   if (!authStore.isLoggedIn) {
     router.push('/login');
     return;
+  }
+
+  try {
+    const dossierId = router.currentRoute.value.params.id;
+    const response = await axios.get(`/cases/case/${dossierId}`);
+
+    const data = response.data;
+
+    request.value.submitter = `${data.user.firstname} ${data.user.lastname}`;
+    request.value.handler = data.handler ? `${data.handler.firstname} ${data.handler.lastname}` : 'Niet toegewezen';
+    request.value.institution = data.institution.name;
+    request.value.course = data.education.name;
+    request.value.subject = data.subject.description;
+    request.value.type = data.typeOfLaw.description;
+    request.value.question = data.content;
+    request.value.documents = data.documents.map(doc => ({ id: doc.id, name: doc.name }));
+    request.value.status = data.status;
+  } catch (error) {
+    console.error('Error fetching dossier data:', error);
   }
 })
 </script>
@@ -63,7 +51,7 @@ onMounted( async () => {
         <GeneralInfo title="Onderwerp" :text="request.subject" />
         <GeneralInfo title="Soort Recht" :text="request.type" />
         <GeneralInfo title="Vraag" :text="request.question" />
-        <h4 class="card-title fw-bold">Meegestuurde Documenten</h4>
+        <h4 class="card-title fw-bold">Meegestuurd Document</h4>
         <ul class="list-group">
           <li class="list-group-item" v-for="document in request.documents" :key="document.id">{{ document.name }}</li>
         </ul>
@@ -85,7 +73,7 @@ onMounted( async () => {
       <div class="card-body">
         <h2 class="card-title">Status Aanpassen</h2>
         <select class="form-select mb-3" v-model="request.status">
-          <option value="open">Open</option>
+          <option value="Open">Open</option>
           <option value="in behandeling">In Behandeling</option>
           <option value="gesloten">Gesloten</option>
         </select>

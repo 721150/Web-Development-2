@@ -1,6 +1,5 @@
 <script setup>
 import { defineProps } from 'vue';
-import NavigationButton from "@/components/NavigationButton.vue";
 
 defineProps({
   title: String,
@@ -15,7 +14,7 @@ defineProps({
     <ul class="list-group">
       <li v-for="question in questions" :key="question.id" class="list-group-item d-flex justify-content-between align-items-center">
         {{ question.content }}
-        <NavigationButton class="btn-sm" buttonText="Bekijk Dossier" buttonLink="/dossier" />
+        <button class="btn btn-sm btn-success" @click="viewDossier(question.id)">Bekijk Dossier</button>
       </li>
     </ul>
   </div>

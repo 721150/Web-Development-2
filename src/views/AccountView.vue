@@ -23,6 +23,7 @@ const placeholderImage = 'src/assets/placeholder.jpg';
 
 const openQuestions = ref([]);
 const handledQuestions = ref([]);
+const selectedDossier = ref(null);
 
 const institutions = ref([]);
 const educations = ref([]);
@@ -149,6 +150,10 @@ onMounted(async () => {
   id.value = authStore.userId;
   fetchData();
 });
+
+function viewDossier(dossierId) {
+  router.push({ name: 'dossier', params: { id: dossierId } });
+}
 
 function handleImageUpload(event) {
   const file = event.target.files[0];
