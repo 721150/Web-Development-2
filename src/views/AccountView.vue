@@ -28,6 +28,7 @@ const institutions = ref([]);
 const educations = ref([]);
 const typeOfLaws = ref([]);
 const subjects = ref([]);
+const cases = ref([]);
 const errorMessage = ref('');
 const showErrorModal = ref(false);
 
@@ -60,13 +61,16 @@ async function fetchData() {
       isApplicant.value = true;
       applicantEducation.value = profileResponse.data.education.id;
       userId.value = profileResponse.data.userId;
+      const response = await axios.get(`/cases/user/${userId.value}`);
+      cases.value = response.data;
+
+      openQuestions.value = cases.value.filter(c => c.status === 'Open' || c.status === 'In behandeling');
+      handledQuestions.value = cases.value.filter(c => c.status === 'Gesloten');
     }
 
-    // const questionsResponse = await axios.get('/questions');
-    // openQuestions.value = questionsResponse.data.filter(q => q.status === 'open');
-    // handledQuestions.value = questionsResponse.data.filter(q => q.status === 'handled');
   } catch (error) {
-    console.error('Error fetching data:', error);
+    errorMessage.value = error;
+    showErrorModal.value = true;
   }
 }
 
