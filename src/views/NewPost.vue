@@ -5,8 +5,10 @@ import SelectField from '../components/SelectField.vue';
 import BlogModal from '../components/BlogModal.vue';
 import ErrorModal from '../components/ErrorModal.vue';
 import axios from '@/axios-auth.js';
+import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const description = ref('');
 const institution = ref('');
@@ -27,6 +29,11 @@ const errorMessage = ref('');
 const validationErrors = ref({});
 
 onMounted(async () => {
+  if (!authStore.isLoggedIn) {
+    router.push('/login');
+    return;
+  }
+  
   try {
     const institutionsResponse = await axios.get('/institutions');
     institutions.value = institutionsResponse.data;

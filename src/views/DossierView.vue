@@ -1,6 +1,11 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import {onMounted, reactive, ref} from 'vue';
 import GeneralInfo from "../components/GeneralInfo.vue";
+import { useAuthStore } from "@/stores/auth.js";
+import { useRouter } from "vue-router";
+
+const authStore = useAuthStore();
+const router = useRouter();
 
 const request = reactive({
   submitter: 'Jan Jansen',
@@ -37,6 +42,13 @@ function sendMessage() {
 function updateStatus() {
   alert(`Status bijgewerkt naar: ${request.status}`);
 }
+
+onMounted( async () => {
+  if (!authStore.isLoggedIn) {
+    router.push('/login');
+    return;
+  }
+})
 </script>
 
 <template>
