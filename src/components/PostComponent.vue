@@ -3,6 +3,10 @@ import FieldDisplay from './FieldDisplay.vue';
 import { reactive, ref } from 'vue';
 import { defineProps, defineEmits } from 'vue';
 import axios from '@/axios-auth.js';
+import ErrorModal from "@/components/ErrorModal.vue";
+
+const errorMessage = ref('');
+const showErrorModal = ref(false);
 
 const props = defineProps({
   blog: Object
@@ -12,17 +16,17 @@ const blog = reactive(props.blog);
 
 const emit = defineEmits(['addComment']);
 
-const newComment = ref('');
+const newReactie = ref('');
 
 function toggleComments() {
   blog.showComments = !blog.showComments;
 }
 
-async function addComment() {
-  if (newComment.value.trim() !== '') {
+async function addReactie() {
+  if (newReactie.value.trim() !== '') {
     const reactie = {
       dateTime: new Date().toISOString(),
-      content: newComment.value
+      content: newReactie.value
     };
 
     try {
@@ -34,10 +38,15 @@ async function addComment() {
         blog.reacties = [];
       }
       blog.reacties.push(response.data);
-      newComment.value = '';
+      newReactie.value = '';
       emit('addComment', blog.id);
     } catch (error) {
-      console.error('Error adding comment:', error);
+      if (error.response) {
+        errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+      } else {
+        errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+      }
+      showErrorModal.value = true;
     }
   }
 }
@@ -52,6 +61,10 @@ function formatDateTime(dateTime) {
     hour12: false
   };
   return new Intl.DateTimeFormat('nl-NL', options).format(new Date(dateTime)).replace(',', '');
+}
+
+function closeErrorModal() {
+  showErrorModal.value = false;
 }
 </script>
 
@@ -69,11 +82,12 @@ function formatDateTime(dateTime) {
       <button class="btn btn-success" @click="toggleComments">{{ blog.showComments ? 'Verberg reacties' : 'Toon reacties' }}</button>
       <div v-if="blog.showComments" class="mt-3">
         <p v-for="reactie in blog.reacties" :key="reactie.id" class="mb-2">{{ formatDateTime(reactie.dateTime) }}: {{ reactie.content }}</p>
-        <input v-model="newComment" type="text" class="form-control mb-2" placeholder="Schrijf een reactie">
-        <button class="btn btn-success" @click="addComment">Plaats reactie</button>
+        <input v-model="newReactie" type="text" class="form-control mb-2" placeholder="Schrijf een reactie">
+        <button class="btn btn-success" @click="addReactie">Plaats reactie</button>
       </div>
     </div>
   </div>
+  <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
 </template>
 
 <style scoped>

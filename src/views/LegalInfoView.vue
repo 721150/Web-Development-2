@@ -11,7 +11,7 @@ export default {
 
 <template>
   <main>
-    <h1>Juridische Informatie rechtsmiddelen studenten</h1>
+    <h1>Juridische informatie rechtsmiddelen studenten</h1>
     <p>In het hoger beroepsonderwijs (HBO) en wetenschappelijk onderwijs (WO) zijn er verschillende procedures die je kunt volgen bij misstanden en onregelmatigheden.</p>
     <div>
       <p class="fw-bold">Verzoekschrift:</p>

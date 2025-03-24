@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LegalInfoView from '../views/LegalInfoView.vue'
 import BlogView from "@/views/BlogView.vue";
 import ContactView from "@/views/ContactView.vue";
-import NewPost from "@/views/NewPost.vue";
+import NewBlog from "@/views/NewBlog.vue";
 import LoginPage from "@/views/LoginPage.vue";
 import AccountView from "@/views/AccountView.vue";
 import DossierView from "@/views/DossierView.vue";
@@ -36,7 +36,7 @@ const router = createRouter({
     {
       path: '/new-post',
       name: 'new-post',
-      component: NewPost,
+      component: NewBlog,
     },
     {
       path: '/account',

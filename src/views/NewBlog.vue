@@ -5,10 +5,8 @@ import SelectField from '../components/SelectField.vue';
 import BlogModal from '../components/BlogModal.vue';
 import ErrorModal from '../components/ErrorModal.vue';
 import axios from '@/axios-auth.js';
-import {useAuthStore} from "@/stores/auth.js";
 
 const router = useRouter();
-const authStore = useAuthStore();
 
 const description = ref('');
 const institution = ref('');
@@ -29,11 +27,6 @@ const errorMessage = ref('');
 const validationErrors = ref({});
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
-    router.push('/login');
-    return;
-  }
-
   try {
     const institutionsResponse = await axios.get('/institutions');
     institutions.value = institutionsResponse.data;
@@ -47,7 +40,11 @@ onMounted(async () => {
     const typesOfLawsResponse = await axios.get('/typesOfLows');
     typesOfLaws.value = typesOfLawsResponse.data;
   } catch (error) {
-    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.message}`;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 });
@@ -113,10 +110,13 @@ async function createPost() {
 
     const response = await axios.post('/blogs', newPost);
     createdPost.value = response.data;
-    errorMessage.value = '';
     showModal.value = true;
   } catch (error) {
-    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.message}`;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 }

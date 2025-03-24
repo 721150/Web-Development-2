@@ -12,7 +12,7 @@ const selectedInstitution = ref('');
 const selectedEducation = ref('');
 const selectedSubject = ref('');
 const selectedTypeOfLaw = ref('');
-const newComment = ref('');
+const newReactie = ref('');
 
 const institutions = ref([]);
 const educations = ref([]);
@@ -65,7 +65,7 @@ onMounted(async () => {
     blogs.value = blogsResponse.data;
   } catch (error) {
     if (error.response) {
-      errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.message}`;
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
     } else {
       errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
     }
@@ -73,16 +73,11 @@ onMounted(async () => {
   }
 });
 
-function toggleComments(postId) {
+function addReactie(postId) {
   const post = blogs.value.find(p => p.id === postId);
-  post.showComments = !post.showComments;
-}
-
-function addComment(postId) {
-  const post = blogs.value.find(p => p.id === postId);
-  if (newComment.value.trim() !== '') {
-    post.comments.push({ id: Date.now(), text: newComment.value, time: new Date().toISOString() });
-    newComment.value = '';
+  if (newReactie.value.trim() !== '') {
+    post.comments.push({ id: Date.now(), text: newReactie.value, time: new Date().toISOString() });
+    newReactie.value = '';
   }
 }
 
@@ -110,7 +105,7 @@ function closeErrorModal() {
     </div>
 
     <div class="container">
-      <PostComponent v-for="blog in filteredBlogs" :key="blog.id" :blog="blog" @addComment="addComment"/>
+      <PostComponent v-for="blog in filteredBlogs" :key="blog.id" :blog="blog" @addComment="addReactie"/>
     </div>
   </main>
   <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
