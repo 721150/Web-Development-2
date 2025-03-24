@@ -5,8 +5,10 @@ import SelectField from '../components/SelectField.vue';
 import BlogModal from '../components/BlogModal.vue';
 import ErrorModal from '../components/ErrorModal.vue';
 import axios from '@/axios-auth.js';
+import { useDataStore } from "@/stores/data.js";
 
 const router = useRouter();
+const dataStore = useDataStore();
 
 const description = ref('');
 const institution = ref('');
@@ -15,11 +17,6 @@ const subject = ref('');
 const typeOfLaw = ref('');
 const content = ref('');
 
-const institutions = ref([]);
-const educations = ref([]);
-const subjects = ref([]);
-const typesOfLaws = ref([]);
-
 const showModal = ref(false);
 const showErrorModal = ref(false);
 const createdPost = ref(null);
@@ -27,21 +24,10 @@ const errorMessage = ref('');
 const validationErrors = ref({});
 
 onMounted(async () => {
-  try {
-    const institutionsResponse = await axios.get('/institutions');
-    institutions.value = institutionsResponse.data;
-
-    const educationsResponse = await axios.get('/educations');
-    educations.value = educationsResponse.data;
-
-    const subjectsResponse = await axios.get('/subjects');
-    subjects.value = subjectsResponse.data;
-
-    const typesOfLawsResponse = await axios.get('/typesOfLows');
-    typesOfLaws.value = typesOfLawsResponse.data;
-  } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+  await dataStore.fetchData();
+  if (dataStore.error) {
+    if (dataStore.error.response) {
+      errorMessage.value = `Fout: ${dataStore.error.response.status} - ${dataStore.error.response.data.errorMessage}`;
     } else {
       errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
     }
@@ -82,10 +68,10 @@ async function createPost() {
   }
 
   try {
-    const selectedInstitution = institutions.value.find(inst => inst.id === parseInt(institution.value));
-    const selectedEducation = educations.value.find(edu => edu.id === parseInt(education.value));
-    const selectedSubject = subjects.value.find(sub => sub.id === parseInt(subject.value));
-    const selectedTypeOfLaw = typesOfLaws.value.find(type => type.id === parseInt(typeOfLaw.value));
+    const selectedInstitution = dataStore.institutions.find(inst => inst.id === parseInt(institution.value));
+    const selectedEducation = dataStore.educations.find(edu => edu.id === parseInt(education.value));
+    const selectedSubject = dataStore.subjects.find(sub => sub.id === parseInt(subject.value));
+    const selectedTypeOfLaw = dataStore.typeOfLaws.find(type => type.id === parseInt(typeOfLaw.value));
 
     const newPost = {
       institution: {
@@ -143,13 +129,13 @@ function goToBlogs() {
       <input v-model="description" type="text" class="form-control" id="title" placeholder="Titel">
     </div>
     <div v-if="validationErrors.institution" class="text-danger">{{ validationErrors.institution }}</div>
-    <SelectField label="Instelling" v-model="institution" :options="institutions" />
+    <SelectField label="Instelling" v-model="institution" :options="dataStore.institutions" />
     <div v-if="validationErrors.education" class="text-danger">{{ validationErrors.education }}</div>
-    <SelectField label="Opleiding" v-model="education" :options="educations" />
+    <SelectField label="Opleiding" v-model="education" :options="dataStore.educations" />
     <div v-if="validationErrors.subject" class="text-danger">{{ validationErrors.subject }}</div>
-    <SelectField label="Onderwerp" v-model="subject" :options="subjects" />
+    <SelectField label="Onderwerp" v-model="subject" :options="dataStore.subjects" />
     <div v-if="validationErrors.typeOfLaw" class="text-danger">{{ validationErrors.typeOfLaw }}</div>
-    <SelectField label="Soort recht" v-model="typeOfLaw" :options="typesOfLaws" />
+    <SelectField label="Soort recht" v-model="typeOfLaw" :options="dataStore.typeOfLaws" />
     <div class="mb-3">
       <div v-if="validationErrors.content" class="text-danger">{{ validationErrors.content }}</div>
       <label for="content" class="form-label">Inhoud</label>

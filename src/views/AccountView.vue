@@ -8,9 +8,12 @@ import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
 import ErrorModal from "@/components/ErrorModal.vue";
+import UserModal from "@/components/UserModal.vue";
+import { useDataStore } from "@/stores/data.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const dataStore = useDataStore();
 
 const id = ref('');
 const firstname = ref('');
@@ -23,15 +26,12 @@ const placeholderImage = 'src/assets/placeholder.jpg';
 
 const openQuestions = ref([]);
 const handledQuestions = ref([]);
-const selectedDossier = ref(null);
 
-const institutions = ref([]);
-const educations = ref([]);
-const typeOfLaws = ref([]);
-const subjects = ref([]);
 const cases = ref([]);
 const errorMessage = ref('');
 const showErrorModal = ref(false);
+const showSuccessModal = ref(false);
+const createdUser = ref(null);
 
 const isHandler = ref(false);
 const isApplicant = ref(false);
@@ -70,15 +70,19 @@ async function fetchData() {
     }
 
   } catch (error) {
-    errorMessage.value = error;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 }
 
 async function updateProfile() {
   try {
-    const institutionName = institutions.value.find(inst => inst.id === parseInt(institution.value));
-    const educationName = educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
+    const institutionName = dataStore.institutions.value.find(inst => inst.id === parseInt(institution.value));
+    const educationName = dataStore.educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
 
     const data = {
       id: id.value,
@@ -109,19 +113,36 @@ async function updateProfile() {
 
     const response = await axios.put('/users/' + id.value, data);
 
-    console.log('Profile updated: ' + response.data);
+    createdUser.value = {
+      id: response.data.id,
+      firstname: response.data.firstname,
+      lastname: response.data.lastname,
+      email: response.data.email
+    };
+    showSuccessModal.value = true;
   } catch (error) {
-    console.error('Error updating profile:', error);
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
+    showErrorModal.value = true;
   }
 }
 
 async function deleteProfile() {
   try {
     await axios.delete('/users/' + id.value);
-    console.log('Profile deleted');
   } catch (error) {
-    console.error('Error deleting profile:', error);
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
+    showErrorModal.value = true;
   }
+  authStore.logout();
+  router.push('/login');
 }
 
 onMounted(async () => {
@@ -130,20 +151,13 @@ onMounted(async () => {
     return;
   }
 
-  try {
-    const institutionsResponse = await axios.get('/institutions');
-    institutions.value = institutionsResponse.data;
-
-    const educationsResponse = await axios.get('/educations');
-    educations.value = educationsResponse.data;
-
-    const subjectsResponse = await axios.get('/subjects');
-    subjects.value = subjectsResponse.data;
-
-    const typesOfLowsResponse = await axios.get('/typesOfLows');
-    typeOfLaws.value = typesOfLowsResponse.data;
-  } catch (error) {
-    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage()}`;
+  await dataStore.fetchData();
+  if (dataStore.error) {
+    if (dataStore.error.response) {
+      errorMessage.value = `Fout: ${dataStore.error.response.status} - ${dataStore.error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 
@@ -167,6 +181,10 @@ function handleImageUpload(event) {
 function closeErrorModal() {
   showErrorModal.value = false;
 }
+
+function closeSuccessModal() {
+  showSuccessModal.value = false;
+}
 </script>
 
 <template>
@@ -177,19 +195,19 @@ function closeErrorModal() {
     <InputField label="Voornaam" v-model="firstname" placeholder="Voornaam" />
     <InputField label="Achternaam" v-model="lastname" placeholder="Achternaam" />
     <InputField label="E-mailadres" v-model="email" type="email" placeholder="E-mailadres" />
-    <SelectField label="Instelling" v-model="institution" :options="institutions" />
+    <SelectField label="Instelling" v-model="institution" :options="dataStore.institutions" />
     <InputField label="phone" v-model="phone" placeholder="Telefoonnummer" />
 
     <!-- Velden voor de behandelaar -->
     <div v-if="isHandler">
       <h3>Behandelaar Gegevens</h3>
-      <CheckboxGroupField label="Soorten Recht" v-model="handlerTypeOfLaws" :options="typeOfLaws" />
-      <CheckboxGroupField label="Onderwerpen" v-model="handlerSubjects" :options="subjects" />
+      <CheckboxGroupField label="Soorten Recht" v-model="handlerTypeOfLaws" :options="dataStore.typeOfLaws" />
+      <CheckboxGroupField label="Onderwerpen" v-model="handlerSubjects" :options="dataStore.subjects" />
     </div>
 
     <!-- Velden voor de indiener -->
     <div v-if="isApplicant">
-      <SelectField label="Opleiding" v-model="applicantEducation" :options="educations" disabled />
+      <SelectField label="Opleiding" v-model="applicantEducation" :options="dataStore.educations" disabled />
     </div>
 
     <div class="d-flex gap-2 mt-4">
@@ -201,6 +219,7 @@ function closeErrorModal() {
     <QuestionList title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
 
     <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
+    <UserModal :showModal="showSuccessModal" :createdUser="createdUser" @close="closeSuccessModal" @goToAccount="closeSuccessModal" />
   </div>
 </template>
 

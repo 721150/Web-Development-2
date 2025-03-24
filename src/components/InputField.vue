@@ -1,7 +1,7 @@
 <script setup>
-import {defineEmits, defineProps} from 'vue';
+import { defineEmits, defineProps } from 'vue';
 
-const props = defineProps({
+defineProps({
   label: String,
   modelValue: String,
   type: {

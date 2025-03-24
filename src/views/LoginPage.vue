@@ -2,7 +2,8 @@
 import { onMounted, ref} from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import InputField from "@/components/InputField.vue";
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
+import NavigationButton from "@/components/NavigationButton.vue";
 
 const email = ref('');
 const password = ref('');
@@ -33,6 +34,7 @@ onMounted(() => {
     <InputField v-model="email" label="E-mailadres" type="email" placeholder="E-mailadres" />
     <InputField label="Wachtwoord" v-model="password" type="password" placeholder="Wachtwoord" />
     <button class="btn btn-success" @click="login">Inloggen</button>
+    <NavigationButton button-link="/create-account" button-text="Maak account" />
     <div v-if="errorMessage" class="text-danger mt-3">{{ errorMessage }}</div>
   </div>
 </template>

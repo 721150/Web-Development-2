@@ -5,6 +5,10 @@ import InputField from "@/components/InputField.vue";
 import SelectField from "@/components/SelectField.vue";
 import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 import ErrorModal from "@/components/ErrorModal.vue";
+import UserModal from "@/components/UserModal.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const role = ref('applicant');
 const user = ref({
@@ -24,8 +28,11 @@ const institutions = ref([]);
 const educations = ref([]);
 const typeOfLaws = ref([]);
 const subjects = ref([]);
+
 const errorMessage = ref('');
 const showErrorModal = ref(false);
+const showSuccessModal = ref(false);
+const createdUser = ref(null);
 
 const updateFields = () => {
   user.value.education = '';
@@ -80,15 +87,24 @@ const submitForm = async () => {
 
 const sendJsonData = async (data) => {
   try {
-    console.log(JSON.stringify(data))
     const response = await axios.post('/users/' + role.value, JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    console.log('Form data successfully submitted:', response.data);
+    createdUser.value = {
+      id: response.data.id,
+      firstname: response.data.firstname,
+      lastname: response.data.lastname,
+      email: response.data.email
+    };
+    showSuccessModal.value = true;
   } catch (error) {
-    errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 };
@@ -107,10 +123,22 @@ onMounted(async () => {
     const typesOfLowsResponse = await axios.get('/typesOfLows');
     typeOfLaws.value = typesOfLowsResponse.data;
   } catch (error) {
-    errorMessage.value = `Server fout: ${error.response.status} - ${error.response.data.errorMessage()}`;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 });
+
+function closeSuccessModal() {
+  showSuccessModal.value = false;
+}
+
+function goToAccount() {
+  router.push('/account');
+}
 </script>
 
 <template>
@@ -149,6 +177,7 @@ onMounted(async () => {
       <button type="submit" class="btn btn-success">Create User</button>
     </form>
     <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
+    <UserModal :showModal="showSuccessModal" :createdUser="createdUser" @close="closeSuccessModal" @goToAccount="goToAccount" />
   </div>
 </template>
 
