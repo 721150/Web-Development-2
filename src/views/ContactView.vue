@@ -6,9 +6,11 @@ import { useRouter } from "vue-router";
 import axios from "@/axios-auth.js";
 import ErrorModal from "@/components/ErrorModal.vue";
 import CasusModal from "@/components/CasusModal.vue";
+import { useDataStore } from "@/stores/data.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const dataStore = useDataStore();
 const errorMessage = ref("");
 const showSuccessModal = ref(false);
 const showErrorModal = ref(false);
@@ -18,9 +20,6 @@ const content = ref('');
 const subject = ref('');
 const typeOfLaw = ref('');
 const files = ref([]);
-
-const subjects = ref([]);
-const typeOfLaws = ref([]);
 
 function handleFileUpload(event) {
   const newFile = event.target.files[0];
@@ -35,8 +34,8 @@ async function submitForm() {
   }
 
   try {
-    const selectedSubject = subjects.value.find(item => item.id === parseInt(subject.value));
-    const selectedTypeOfLaw = typeOfLaws.value.find(item => item.id === parseInt(typeOfLaw.value));
+    const selectedSubject = dataStore.subjects.find(item => item.id === parseInt(subject.value));
+    const selectedTypeOfLaw = dataStore.typeOfLaws.find(item => item.id === parseInt(typeOfLaw.value));
 
     const caseData = {
       user: authStore.userId,
@@ -91,14 +90,13 @@ onMounted(async () => {
     return;
   }
 
-  try {
-    const subjectsResponse = await axios.get('/subjects');
-    subjects.value = subjectsResponse.data;
-
-    const typesOfLowsResponse = await axios.get('/typesOfLows');
-    typeOfLaws.value = typesOfLowsResponse.data;
-  } catch (error) {
-    errorMessage.value = `Fout: ${error.message}}`;
+  await dataStore.fetchData();
+  if (dataStore.error) {
+    if (dataStore.error.response) {
+      errorMessage.value = `Fout: ${dataStore.error.response.status} - ${dataStore.error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
 });
@@ -107,8 +105,8 @@ onMounted(async () => {
 <template>
   <div class="container mt-5">
     <h2>Leg een casus voor over je rechten</h2>
-    <SelectField label="Onderwerp" v-model="subject" :options="subjects" />
-    <SelectField label="Soort recht" v-model="typeOfLaw" :options="typeOfLaws" />
+    <SelectField label="Onderwerp" v-model="subject" :options="dataStore.subjects" />
+    <SelectField label="Soort recht" v-model="typeOfLaw" :options="dataStore.typeOfLaws" />
     <div class="mb-3">
       <label for="question" class="form-label">Casus</label>
       <textarea v-model="content" class="form-control" id="question" rows="3" placeholder="Beschrijf je casus"></textarea>

@@ -6,6 +6,9 @@ import FilterSelect from '../components/FilterSelect.vue';
 import NavigationButton from '../components/NavigationButton.vue';
 import PostComponent from '../components/PostComponent.vue';
 import ErrorModal from "@/components/ErrorModal.vue";
+import { useDataStore } from "@/stores/data.js";
+
+const dataStore = useDataStore();
 
 const searchQuery = ref('');
 const selectedInstitution = ref('');
@@ -14,10 +17,6 @@ const selectedSubject = ref('');
 const selectedTypeOfLaw = ref('');
 const newReactie = ref('');
 
-const institutions = ref([]);
-const educations = ref([]);
-const subjects = ref([]);
-const typeOfLow = ref([]);
 const blogs = ref([]);
 
 const errorMessage = ref('');
@@ -48,19 +47,16 @@ const filteredBlogs = computed(() => {
 });
 
 onMounted(async () => {
+  await dataStore.fetchData();
+  if (dataStore.error) {
+    if (dataStore.error.response) {
+      errorMessage.value = `Fout: ${dataStore.error.response.status} - ${dataStore.error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
+    showErrorModal.value = true;
+  }
   try {
-    const institutionsResponse = await axios.get('/institutions');
-    institutions.value = institutionsResponse.data;
-
-    const educationsResponse = await axios.get('/educations');
-    educations.value = educationsResponse.data;
-
-    const subjectsResponse = await axios.get('/subjects');
-    subjects.value = subjectsResponse.data;
-
-    const typesOfLowsResponse = await axios.get('/typesOfLows');
-    typeOfLow.value = typesOfLowsResponse.data;
-
     const blogsResponse = await axios.get('/blogs');
     blogs.value = blogsResponse.data;
   } catch (error) {
@@ -71,6 +67,7 @@ onMounted(async () => {
     }
     showErrorModal.value = true;
   }
+
 });
 
 function addReactie(postId) {
@@ -96,10 +93,10 @@ function closeErrorModal() {
       <div class="container mt-3">
         <SearchInput v-model="searchQuery" />
         <div class="d-flex justify-content-between">
-          <FilterSelect v-model="selectedInstitution" :options="institutions" defaultOptionText="Instelling" />
-          <FilterSelect v-model="selectedEducation" :options="educations" defaultOptionText="Opleiding" />
-          <FilterSelect v-model="selectedSubject" :options="subjects" defaultOptionText="Onderwerp" />
-          <FilterSelect v-model="selectedTypeOfLaw" :options="typeOfLow" defaultOptionText="Soort recht" />
+          <FilterSelect v-model="selectedInstitution" :options="dataStore.institutions" defaultOptionText="Instelling" />
+          <FilterSelect v-model="selectedEducation" :options="dataStore.educations" defaultOptionText="Opleiding" />
+          <FilterSelect v-model="selectedSubject" :options="dataStore.subjects" defaultOptionText="Onderwerp" />
+          <FilterSelect v-model="selectedTypeOfLaw" :options="dataStore.typeOfLaws" defaultOptionText="Soort recht" />
         </div>
       </div>
     </div>

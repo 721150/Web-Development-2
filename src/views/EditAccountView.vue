@@ -2,32 +2,29 @@
 import { ref, onMounted } from 'vue';
 import axios from '@/axios-auth.js';
 import InputField from '../components/InputField.vue';
-import QuestionList from '../components/QuestionList.vue';
 import SelectField from "@/components/SelectField.vue";
 import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
-import { useAuthStore } from "@/stores/auth.js";
-import { useRouter } from "vue-router";
 import ErrorModal from "@/components/ErrorModal.vue";
 import UserModal from "@/components/UserModal.vue";
+import { useRoute, useRouter } from "vue-router";
 import { useDataStore } from "@/stores/data.js";
+import { useAuthStore } from "@/stores/auth.js";
 
+const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
 const dataStore = useDataStore();
+const authStore = useAuthStore();
 
-const id = ref('');
+const id = ref(route.params.id);
 const firstname = ref('');
 const lastname = ref('');
 const email = ref('');
 const institution = ref('');
 const phone = ref('');
 const image = ref('');
+const userId = ref('');
 const placeholderImage = 'src/assets/placeholder.jpg';
 
-const openQuestions = ref([]);
-const handledQuestions = ref([]);
-
-const cases = ref([]);
 const errorMessage = ref('');
 const showErrorModal = ref(false);
 const showSuccessModal = ref(false);
@@ -38,35 +35,29 @@ const isApplicant = ref(false);
 const handlerTypeOfLaws = ref([]);
 const handlerSubjects = ref([]);
 const applicantEducation = ref('');
-const userId = ref('');
 
 async function fetchData() {
   try {
-    const profileResponse = await axios.get('/users/' + id.value);
+    const response = await axios.get('/users/' + id.value);
 
-    firstname.value = profileResponse.data.firstname;
-    lastname.value = profileResponse.data.lastname;
-    email.value = profileResponse.data.email;
-    institution.value = profileResponse.data.institution.id;
-    phone.value = profileResponse.data.phone;
-    image.value = profileResponse.data.image;
+    firstname.value = response.data.firstname;
+    lastname.value = response.data.lastname;
+    email.value = response.data.email;
+    institution.value = response.data.institution.id;
+    phone.value = response.data.phone;
+    image.value = response.data.image;
 
-    if (profileResponse.data.typeOfLaws && profileResponse.data.subjects) {
+    if (response.data.typeOfLaws && response.data.subjects) {
       isHandler.value = true;
-      handlerTypeOfLaws.value = profileResponse.data.typeOfLaws;
-      handlerSubjects.value = profileResponse.data.subjects;
-      userId.value = profileResponse.data.userId;
+      handlerTypeOfLaws.value = response.data.typeOfLaws;
+      handlerSubjects.value = response.data.subjects;
+      userId.value = response.data.userId;
     }
 
-    if (profileResponse.data.education) {
+    if (response.data.education) {
       isApplicant.value = true;
-      applicantEducation.value = profileResponse.data.education.id;
-      userId.value = profileResponse.data.userId;
-      const response = await axios.get(`/cases/user/${userId.value}`);
-      cases.value = response.data;
-
-      openQuestions.value = cases.value.filter(c => c.status === 'Open' || c.status === 'In behandeling');
-      handledQuestions.value = cases.value.filter(c => c.status === 'Gesloten');
+      applicantEducation.value = response.data.education.id;
+      userId.value = response.data.userId;
     }
 
   } catch (error) {
@@ -81,8 +72,8 @@ async function fetchData() {
 
 async function updateProfile() {
   try {
-    const institutionName = dataStore.institutions.value.find(inst => inst.id === parseInt(institution.value));
-    const educationName = dataStore.educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
+    const institutionName = dataStore.institutions.find(inst => inst.id === parseInt(institution.value));
+    const educationName = dataStore.educations.find(edu => edu.id === parseInt(applicantEducation.value));
 
     const data = {
       id: id.value,
@@ -94,13 +85,13 @@ async function updateProfile() {
         name: institutionName.name,
       },
       phone: phone.value,
-      image: image.value
+      image: image.value,
+      userId: userId.value,
     };
 
     if (isHandler.value) {
       data.typeOfLaws = handlerTypeOfLaws.value;
       data.subjects = handlerSubjects.value;
-      data.userId = userId.value;
     }
 
     if (isApplicant.value) {
@@ -108,7 +99,6 @@ async function updateProfile() {
         id: applicantEducation.value,
         name: educationName.name
       };
-      data.userId = userId.value;
     }
 
     const response = await axios.put('/users/' + id.value, data);
@@ -130,21 +120,6 @@ async function updateProfile() {
   }
 }
 
-async function deleteProfile() {
-  try {
-    await axios.delete('/users/' + id.value);
-  } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
-    } else {
-      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
-    }
-    showErrorModal.value = true;
-  }
-  authStore.logout();
-  router.push('/login');
-}
-
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
     router.push('/login');
@@ -161,13 +136,8 @@ onMounted(async () => {
     showErrorModal.value = true;
   }
 
-  id.value = authStore.userId;
   fetchData();
 });
-
-function viewDossier(dossierId) {
-  router.push({ name: 'dossier', params: { id: dossierId } });
-}
 
 function handleImageUpload(event) {
   const file = event.target.files[0];
@@ -185,18 +155,22 @@ function closeErrorModal() {
 function closeSuccessModal() {
   showSuccessModal.value = false;
 }
+
+function toUserList() {
+  router.push('/manage-accounts');
+}
 </script>
 
 <template>
   <div class="container mt-5">
-    <h2>Mijn Gegevens</h2>
+    <h2>Gebruikersgegevens bewerken</h2>
     <img :src="image || placeholderImage" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
     <input type="file" @change="handleImageUpload" class="form-control mb-3" accept="image/*">
     <InputField label="Voornaam" v-model="firstname" placeholder="Voornaam" />
     <InputField label="Achternaam" v-model="lastname" placeholder="Achternaam" />
     <InputField label="E-mailadres" v-model="email" type="email" placeholder="E-mailadres" />
     <SelectField label="Instelling" v-model="institution" :options="dataStore.institutions" />
-    <InputField label="phone" v-model="phone" placeholder="Telefoonnummer" />
+    <InputField label="Telefoonnummer" v-model="phone" placeholder="Telefoonnummer" />
 
     <!-- Velden voor de behandelaar -->
     <div v-if="isHandler">
@@ -207,16 +181,13 @@ function closeSuccessModal() {
 
     <!-- Velden voor de indiener -->
     <div v-if="isApplicant">
-      <SelectField label="Opleiding" v-model="applicantEducation" :options="dataStore.educations" disabled />
+      <SelectField label="Opleiding" v-model="applicantEducation" :options="dataStore.educations" />
     </div>
 
     <div class="d-flex gap-2 mt-4">
-      <button class="btn btn-success" @click="updateProfile">Gegevens Bijwerken</button>
-      <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>
+      <button class="btn btn-success mb-4" @click="updateProfile">Gegevens Bijwerken</button>
+      <button class="btn btn-primary mb-4" @click="toUserList">Naar alle gebruikers</button>
     </div>
-
-    <QuestionList title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />
-    <QuestionList title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
 
     <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
     <UserModal :showModal="showSuccessModal" :createdUser="createdUser" @close="closeSuccessModal" @goToAccount="closeSuccessModal" />

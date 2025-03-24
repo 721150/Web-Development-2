@@ -7,8 +7,10 @@ import CheckboxGroupField from "@/components/CheckboxGroupField.vue";
 import ErrorModal from "@/components/ErrorModal.vue";
 import UserModal from "@/components/UserModal.vue";
 import { useRouter } from "vue-router";
+import { useDataStore } from "@/stores/data.js";
 
 const router = useRouter();
+const dataStore = useDataStore();
 
 const role = ref('applicant');
 const user = ref({
@@ -23,11 +25,6 @@ const user = ref({
   subjects: [],
   image: null
 });
-
-const institutions = ref([]);
-const educations = ref([]);
-const typeOfLaws = ref([]);
-const subjects = ref([]);
 
 const errorMessage = ref('');
 const showErrorModal = ref(false);
@@ -50,8 +47,8 @@ function closeErrorModal() {
 }
 
 const submitForm = async () => {
-  const selectedInstitution = institutions.value.find(inst => inst.id === parseInt(user.value.institution));
-  const selectedEducation = educations.value.find(edu => edu.id === parseInt(user.value.education));
+  const selectedInstitution = dataStore.institutions.find(inst => inst.id === parseInt(user.value.institution));
+  const selectedEducation = dataStore.educations.find(edu => edu.id === parseInt(user.value.education));
 
   const data = {
     firstname: user.value.firstname,
@@ -110,21 +107,10 @@ const sendJsonData = async (data) => {
 };
 
 onMounted(async () => {
-  try {
-    const institutionsResponse = await axios.get('/institutions');
-    institutions.value = institutionsResponse.data;
-
-    const educationsResponse = await axios.get('/educations');
-    educations.value = educationsResponse.data;
-
-    const subjectsResponse = await axios.get('/subjects');
-    subjects.value = subjectsResponse.data;
-
-    const typesOfLowsResponse = await axios.get('/typesOfLows');
-    typeOfLaws.value = typesOfLowsResponse.data;
-  } catch (error) {
-    if (error.response) {
-      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+  await dataStore.fetchData();
+  if (dataStore.error) {
+    if (dataStore.error.response) {
+      errorMessage.value = `Fout: ${dataStore.error.response.status} - ${dataStore.error.response.data.errorMessage}`;
     } else {
       errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
     }
@@ -159,7 +145,7 @@ function goToAccount() {
       <InputField label="E-mailadres" v-model="user.email" type="email" placeholder="E-mailadres" />
       <InputField label="Wachtwoord" v-model="user.password" type="password" placeholder="Wachtwoord" />
 
-      <SelectField label="Instelling" v-model="user.institution" :options="institutions" />
+      <SelectField label="Instelling" v-model="user.institution" :options="dataStore.institutions" />
       <InputField label="Telefoonnummer" v-model="user.phone" type="text" placeholder="Telefoonnummer" />
 
       <div class="mb-3">
@@ -168,11 +154,11 @@ function goToAccount() {
       </div>
 
       <div v-if="role === 'applicant'" class="mb-3">
-        <SelectField label="Opleiding" v-model="user.education" :options="educations" />
+        <SelectField label="Opleiding" v-model="user.education" :options="dataStore.educations" />
       </div>
 
-      <CheckboxGroupField v-if="role === 'handler'" label="Soort recht" v-model="user.typeOfLaws" :options="typeOfLaws" />
-      <CheckboxGroupField v-if="role === 'handler'" label="Onderwerp" v-model="user.subjects" :options="subjects" />
+      <CheckboxGroupField v-if="role === 'handler'" label="Soort recht" v-model="user.typeOfLaws" :options="dataStore.typeOfLaws" />
+      <CheckboxGroupField v-if="role === 'handler'" label="Onderwerp" v-model="user.subjects" :options="dataStore.subjects" />
 
       <button type="submit" class="btn btn-success">Create User</button>
     </form>
