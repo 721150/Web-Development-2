@@ -19,11 +19,39 @@ const newCase = ref('');
 const content = ref('');
 const subject = ref('');
 const typeOfLaw = ref('');
-const files = ref([]);
+const file = ref([]);
 
 function handleFileUpload(event) {
   const newFile = event.target.files[0];
-  files.value = [newFile];
+  if (newFile.size > 1048576) {
+    errorMessage.value = "Bestand is te groot, mag niet groter zijn dan 1 MB";
+    showErrorModal.value = true;
+    return;
+  }
+  file.value = [newFile];
+}
+
+function getData() {
+  const selectedSubject = dataStore.subjects.find(item => item.id === parseInt(subject.value));
+  const selectedTypeOfLaw = dataStore.typeOfLaws.find(item => item.id === parseInt(typeOfLaw.value));
+
+  const caseData = {
+    user: authStore.userId,
+    subject: {
+      id: subject.value,
+      description: selectedSubject.description,
+    },
+    typeOfLaw: {
+      id: typeOfLaw.value,
+      description: selectedTypeOfLaw.description,
+    },
+    content: content.value,
+  };
+
+  if (file.value.length > 0) {
+    caseData.document = file.value[0];
+  }
+  return caseData;
 }
 
 async function submitForm() {
@@ -34,25 +62,7 @@ async function submitForm() {
   }
 
   try {
-    const selectedSubject = dataStore.subjects.find(item => item.id === parseInt(subject.value));
-    const selectedTypeOfLaw = dataStore.typeOfLaws.find(item => item.id === parseInt(typeOfLaw.value));
-
-    const caseData = {
-      user: authStore.userId,
-      subject: {
-        id: subject.value,
-        description: selectedSubject.description,
-      },
-      typeOfLaw: {
-        id: typeOfLaw.value,
-        description: selectedTypeOfLaw.description,
-      },
-      content: content.value,
-    };
-
-    if (files.value.length > 0) {
-      caseData.document = files.value[0];
-    }
+    const caseData = getData();
 
     const response = await axios.post('/cases', caseData, {
       headers: {
@@ -62,7 +72,6 @@ async function submitForm() {
 
     newCase.value = response;
     showSuccessModal.value = true;
-
   } catch (error) {
     if (error.response) {
       errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
@@ -109,15 +118,9 @@ onMounted(async () => {
       <label for="question" class="form-label">Casus</label>
       <textarea v-model="content" class="form-control" id="question" rows="3" placeholder="Beschrijf je casus"></textarea>
     </div>
-    <div class="mb-3">
-      <label for="file" class="form-label">Documenten</label>
-      <input type="file" class="form-control" id="files" multiple @change="handleFileUpload">
-    </div>
-    <div class="mb-3">
-      <h5>Geselecteerd bestand:</h5>
-      <ul>
-        <li v-for="file in files" :key="file.name">{{ file.name }}</li>
-      </ul>
+    <div class="mb-5">
+      <label for="file" class="form-label">Document</label>
+      <input type="file" class="form-control" id="files" @change="handleFileUpload">
     </div>
     <button class="btn btn-success" @click="submitForm">Verstuur</button>
   </div>

@@ -10,8 +10,6 @@ const router = useRouter();
 
 const request = ref([]);
 
-const newMessage = ref('');
-
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
     router.push('/login');
@@ -21,11 +19,9 @@ onMounted(async () => {
   try {
     const dossierId = router.currentRoute.value.params.id;
     const response = await axios.get(`/cases/case/${dossierId}`);
-
     const data = response.data;
 
     request.value.submitter = `${data.user.firstname} ${data.user.lastname}`;
-    request.value.handler = data.handler ? `${data.handler.firstname} ${data.handler.lastname}` : 'Niet toegewezen';
     request.value.institution = data.institution.name;
     request.value.course = data.education.name;
     request.value.subject = data.subject.description;
@@ -37,6 +33,13 @@ onMounted(async () => {
       url: 'http://localhost/' + doc.document
     }));
     request.value.status = data.status;
+
+    const communicationResponse = await axios.get(`/communications/${dossierId}`);
+    if (communicationResponse.data.handler) {
+      request.value.communicationContent = communicationResponse.data.content;
+      request.value.communicationId = communicationResponse.data.id;
+      request.value.communicationHandler = `${communicationResponse.data.handler.firstname} ${communicationResponse.data.handler.lastname}`;
+    }
   } catch (error) {
     console.error('Error fetching dossier data:', error);
   }
@@ -49,12 +52,11 @@ onMounted(async () => {
     <div class="card mb-3">
       <div class="card-body">
         <GeneralInfo title="Gegevens Indiener" :text="request.submitter" />
-        <GeneralInfo title="Gegevens Behandelaar" :text="request.handler" />
         <GeneralInfo title="Instelling" :text="request.institution" />
         <GeneralInfo title="Opleiding" :text="request.course" />
         <GeneralInfo title="Onderwerp" :text="request.subject" />
         <GeneralInfo title="Soort Recht" :text="request.type" />
-        <GeneralInfo title="Vraag" :text="request.question" />
+        <GeneralInfo title="Casus" :text="request.question" />
         <h4 class="card-title fw-bold">Meegestuurd Document</h4>
         <ul class="list-group">
           <li class="list-group-item" v-for="document in request.documents" :key="document.id">
@@ -63,21 +65,16 @@ onMounted(async () => {
         </ul>
       </div>
     </div>
-    <div class="card mb-3">
+    <h1 v-if="request.communicationHandler">Reactie</h1>
+    <div v-if="request.communicationHandler" class="card mb-3">
       <div class="card-body">
-        <h2 class="card-title">Communicatie</h2>
-        <ul class="list-group mb-3">
-          <li class="list-group-item" v-for="message in request.communication" :key="message.id">
-            <p><strong>{{ message.sender }}:</strong> {{ message.text }}</p>
-          </li>
-        </ul>
-        <textarea class="form-control mb-3" v-model="newMessage" placeholder="Schrijf een bericht..."></textarea>
-        <button class="btn btn-success" @click="sendMessage">Verstuur</button>
+        <GeneralInfo title="Behandelaar" :text="request.communicationHandler" />
+        <GeneralInfo title="Antwoord" :text="request.communicationContent" />
       </div>
     </div>
+    <h1>Status Aanpassen</h1>
     <div class="card">
       <div class="card-body">
-        <h2 class="card-title">Status Aanpassen</h2>
         <select class="form-select mb-3" v-model="request.status">
           <option value="Open">Open</option>
           <option value="in behandeling">In Behandeling</option>

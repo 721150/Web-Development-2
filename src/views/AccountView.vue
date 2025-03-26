@@ -79,37 +79,42 @@ async function fetchData() {
   }
 }
 
+function getData(institutionName, educationName) {
+  const data = {
+    id: id.value,
+    firstname: firstname.value,
+    lastname: lastname.value,
+    email: email.value,
+    institution: {
+      id: institution.value,
+      name: institutionName.name,
+    },
+    phone: phone.value,
+    image: image.value
+  };
+
+  if (isHandler.value) {
+    data.typeOfLaws = handlerTypeOfLaws.value;
+    data.subjects = handlerSubjects.value;
+    data.userId = userId.value;
+  }
+
+  if (isApplicant.value) {
+    data.education = {
+      id: applicantEducation.value,
+      name: educationName.name
+    };
+    data.userId = userId.value;
+  }
+  return data;
+}
+
 async function updateProfile() {
   try {
     const institutionName = dataStore.institutions.value.find(inst => inst.id === parseInt(institution.value));
     const educationName = dataStore.educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
 
-    const data = {
-      id: id.value,
-      firstname: firstname.value,
-      lastname: lastname.value,
-      email: email.value,
-      institution: {
-        id: institution.value,
-        name: institutionName.name,
-      },
-      phone: phone.value,
-      image: image.value
-    };
-
-    if (isHandler.value) {
-      data.typeOfLaws = handlerTypeOfLaws.value;
-      data.subjects = handlerSubjects.value;
-      data.userId = userId.value;
-    }
-
-    if (isApplicant.value) {
-      data.education = {
-        id: applicantEducation.value,
-        name: educationName.name
-      };
-      data.userId = userId.value;
-    }
+    const data = getData(institutionName, educationName);
 
     const response = await axios.put('/users/' + id.value, data);
 
