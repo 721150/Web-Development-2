@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 import GeneralInfo from "../components/GeneralInfo.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
@@ -12,7 +12,7 @@ const request = ref([]);
 
 const newMessage = ref('');
 
-onMounted( async () => {
+onMounted(async () => {
   if (!authStore.isLoggedIn) {
     router.push('/login');
     return;
@@ -31,12 +31,16 @@ onMounted( async () => {
     request.value.subject = data.subject.description;
     request.value.type = data.typeOfLaw.description;
     request.value.question = data.content;
-    request.value.documents = data.documents.map(doc => ({ id: doc.id, name: doc.name }));
+    request.value.documents = data.documents.map(doc => ({
+      id: doc.id,
+      name: 'Document ' + doc.id,
+      url: 'http://localhost/' + doc.document
+    }));
     request.value.status = data.status;
   } catch (error) {
     console.error('Error fetching dossier data:', error);
   }
-})
+});
 </script>
 
 <template>
@@ -53,7 +57,9 @@ onMounted( async () => {
         <GeneralInfo title="Vraag" :text="request.question" />
         <h4 class="card-title fw-bold">Meegestuurd Document</h4>
         <ul class="list-group">
-          <li class="list-group-item" v-for="document in request.documents" :key="document.id">{{ document.name }}</li>
+          <li class="list-group-item" v-for="document in request.documents" :key="document.id">
+            <a :href="document.url" target="_blank" class="text-primary">{{ document.name }}</a>
+          </li>
         </ul>
       </div>
     </div>

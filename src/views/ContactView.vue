@@ -51,28 +51,26 @@ async function submitForm() {
     };
 
     if (files.value.length > 0) {
-      const fileBase64 = await fileToBase64(files.value[0]);
-      caseData.document = fileBase64;
+      caseData.document = files.value[0];
     }
 
-    const response = await axios.post('/cases', caseData);
+    const response = await axios.post('/cases', caseData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
     newCase.value = response;
     showSuccessModal.value = true;
 
   } catch (error) {
-    errorMessage.value = `Fout: ${error.message}`;
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
     showErrorModal.value = true;
   }
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
 }
 
 function closeErrorModal() {
