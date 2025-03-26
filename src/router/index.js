@@ -9,6 +9,7 @@ import DossierView from "@/views/DossierView.vue";
 import CreateAccountView from "@/views/CreateAccountView.vue";
 import ManageAccountsView from "@/views/ManageAccountsView.vue";
 import EditAccountView from "@/views/EditAccountView.vue";
+import CaseListView from "@/views/CaseListView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,6 +70,11 @@ const router = createRouter({
       path: '/edit-account/:id',
       name: 'edit-account',
       component: EditAccountView,
+    },
+    {
+      path: '/caselist',
+      name: 'caselist',
+      component: CaseListView,
     }
   ],
 })

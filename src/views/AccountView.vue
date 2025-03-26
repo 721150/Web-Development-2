@@ -220,8 +220,8 @@ function closeSuccessModal() {
       <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>
     </div>
 
-    <QuestionList title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />
-    <QuestionList title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
+    <QuestionList v-if="openQuestions.length > 0" title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />
+    <QuestionList v-if="handledQuestions.length > 0" title="Behandelde Vragen" :questions="handledQuestions" :viewDossier="viewDossier" />
 
     <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
     <UserModal :showModal="showSuccessModal" :createdUser="createdUser" @close="closeSuccessModal" @goToAccount="closeSuccessModal" />

@@ -4,11 +4,15 @@ import GeneralInfo from "../components/GeneralInfo.vue";
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
 import axios from "@/axios-auth.js";
+import ErrorModal from "@/components/ErrorModal.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const request = ref([]);
+
+const errorMessage = ref('');
+const showErrorModal = ref(false);
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
@@ -41,7 +45,12 @@ onMounted(async () => {
       request.value.communicationHandler = `${communicationResponse.data.handler.firstname} ${communicationResponse.data.handler.lastname}`;
     }
   } catch (error) {
-    console.error('Error fetching dossier data:', error);
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het laden van de gegevens.';
+    }
+    showErrorModal.value = true;
   }
 });
 </script>
@@ -73,17 +82,13 @@ onMounted(async () => {
       </div>
     </div>
     <h1>Status Aanpassen</h1>
-    <div class="card">
+    <div class="card mb-5">
       <div class="card-body">
-        <select class="form-select mb-3" v-model="request.status">
-          <option value="Open">Open</option>
-          <option value="in behandeling">In Behandeling</option>
-          <option value="gesloten">Gesloten</option>
-        </select>
-        <button class="btn btn-success" @click="updateStatus">Update Status</button>
+        <GeneralInfo title="Status" :text="request.status" />
       </div>
     </div>
   </div>
+  <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
 </template>
 
 <style scoped>
