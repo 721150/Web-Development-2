@@ -32,6 +32,7 @@ onMounted(async () => {
     const response = await axios.get(`/cases/case/${dossierId}`);
     const data = response.data;
 
+    request.value.id = dossierId;
     request.value.submitter = `${data.user.firstname} ${data.user.lastname}`;
     request.value.userId = data.user.id;
     request.value.institutionId = data.institution.id;
@@ -68,9 +69,8 @@ onMounted(async () => {
 
 async function updateStatus() {
   try {
-    const dossierId = router.currentRoute.value.params.id;
     const updatedCase = {
-      id: dossierId,
+      id: request.value.id,
       user: request.value.userId,
       institution: {
         id: request.value.institutionId,
@@ -89,15 +89,16 @@ async function updateStatus() {
         description: request.value.type
       },
       content: request.value.question,
-      documents: request.value.documents,
+      document: request.value.documents,
       status: request.value.status,
     };
 
-    const response = await axios.put(`/cases/${dossierId}`, updatedCase, {
+    const response = await axios.put(`/cases/${request.value.id}`, updatedCase, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
+    console.log(response);
     message.value = "Status aangepast: " + response.data.status;
     showConfirmModal.value = true;
   } catch (error) {
