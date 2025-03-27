@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 import SelectField from '../components/SelectField.vue';
 import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
@@ -92,7 +92,7 @@ function closeSuccessModal() {
 }
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
+  if (!authStore.isLoggedIn || authStore.userRole !== "Indiener") {
     router.push('/login');
     return;
   }

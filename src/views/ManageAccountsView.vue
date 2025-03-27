@@ -43,7 +43,7 @@ async function deleteUser(userId) {
 }
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
+  if (!authStore.isLoggedIn || authStore.userRole !== "Beheerder") {
     router.push('/login');
     return;
   }

@@ -5,14 +5,17 @@ import { useAuthStore } from "@/stores/auth.js";
 import { useRouter } from "vue-router";
 import axios from "@/axios-auth.js";
 import ErrorModal from "@/components/ErrorModal.vue";
+import CasusModal from "@/components/CasusModal.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const request = ref([]);
+const newCase = ref(null);
 
 const errorMessage = ref('');
 const showErrorModal = ref(false);
+const showSuccessModal = ref(false);
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
@@ -26,9 +29,14 @@ onMounted(async () => {
     const data = response.data;
 
     request.value.submitter = `${data.user.firstname} ${data.user.lastname}`;
+    request.value.userId = data.user.id;
+    request.value.institutionId = data.institution.id;
     request.value.institution = data.institution.name;
+    request.value.courseId = data.education.id;
     request.value.course = data.education.name;
+    request.value.subjectId = data.subject.id;
     request.value.subject = data.subject.description;
+    request.value.typeId = data.typeOfLaw.id;
     request.value.type = data.typeOfLaw.description;
     request.value.question = data.content;
     request.value.documents = data.documents.map(doc => ({
@@ -53,6 +61,58 @@ onMounted(async () => {
     showErrorModal.value = true;
   }
 });
+
+async function updateStatus() {
+  try {
+    const dossierId = router.currentRoute.value.params.id;
+    const updatedCase = {
+      id: dossierId,
+      user: request.value.userId,
+      institution: {
+        id: request.value.institutionId,
+        name: request.value.institution
+      },
+      education: {
+        id: request.value.courseId,
+        name: request.value.course
+      },
+      subject: {
+        id: request.value.subjectId,
+        description: request.value.subject
+      },
+      typeOfLaw: {
+        id: request.value.typeId,
+        description: request.value.type
+      },
+      content: request.value.question,
+      documents: request.value.documents,
+      status: request.value.status,
+    };
+
+    const response = await axios.put(`/cases/${dossierId}`, updatedCase, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    newCase.value = response;
+    showSuccessModal.value = true;
+  } catch (error) {
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het bijwerken van de status.';
+    }
+    showErrorModal.value = true;
+  }
+}
+
+function closeErrorModal() {
+  showErrorModal.value = false;
+}
+
+function closeSuccessModal() {
+  showSuccessModal.value = false;
+}
 </script>
 
 <template>
@@ -81,14 +141,34 @@ onMounted(async () => {
         <GeneralInfo title="Antwoord" :text="request.communicationContent" />
       </div>
     </div>
-    <h1>Status Aanpassen</h1>
-    <div class="card mb-5">
+    <div v-if="authStore.userRole === `Indiener`" class="card mb-5">
       <div class="card-body">
         <GeneralInfo title="Status" :text="request.status" />
       </div>
     </div>
+    <div v-if="authStore.userRole === `Behandelaar`">
+      <h1>Antwoord Schrijven</h1>
+      <div class="card mb-3">
+        <div class="card-body">
+          <textarea v-model="request.newResponse" class="form-control" rows="5"></textarea>
+          <button @click="sendResponse" class="btn btn-success mt-3">Verstuur antwoord</button>
+        </div>
+      </div>
+      <h1>Status Aanpassen</h1>
+      <div class="card mb-5">
+        <div class="card-body">
+          <select v-model="request.status" class="form-select">
+            <option value="Open">Open</option>
+            <option value="In behandeling">In Behandeling</option>
+            <option value="Gesloten">Gesloten</option>
+          </select>
+          <button @click="updateStatus" class="btn btn-success mt-3">Update Status</button>
+        </div>
+      </div>
+    </div>
   </div>
   <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
+  <CasusModal :showModal="showSuccessModal" :caseData="newCase" @close="closeSuccessModal" />
 </template>
 
 <style scoped>

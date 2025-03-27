@@ -8,9 +8,11 @@ import ErrorModal from "@/components/ErrorModal.vue";
 import UserModal from "@/components/UserModal.vue";
 import { useRouter } from "vue-router";
 import { useDataStore } from "@/stores/data.js";
+import { useAuthStore } from "@/stores/auth.js";
 
 const router = useRouter();
 const dataStore = useDataStore();
+const authStore = useAuthStore();
 
 const role = ref('applicant');
 const user = ref({
@@ -135,8 +137,8 @@ function goToAccount() {
         <label for="role" class="form-label">Role:</label>
         <select v-model="role" @change="updateFields" class="form-select">
           <option value="applicant">Indiener</option>
-          <option value="handler">Behandelaar</option>
-          <option value="admin">Beheerder</option>
+          <option v-if="authStore.userRole === `Beheerder`" value="handler">Behandelaar</option>
+          <option v-if="authStore.userRole === `Beheerder`" value="admin">Beheerder</option>
         </select>
       </div>
 

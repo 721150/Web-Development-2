@@ -18,6 +18,14 @@ export const useAuthStore = defineStore('auth', () => {
     return null;
   });
 
+  const userRole = computed(() => {
+    if (token.value) {
+      const decoded = jwtDecode(token.value);
+      return decoded.data.role;
+    }
+    return null;
+  })
+
   async function login(username, password) {
     try {
       const response = await axios.post('/users/login', {
@@ -38,5 +46,5 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null;
   }
 
-  return { token, error, login, logout, isLoggedIn, userId }
+  return { token, error, login, logout, isLoggedIn, userId, userRole }
 })

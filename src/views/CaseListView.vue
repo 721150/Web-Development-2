@@ -34,7 +34,7 @@ async function fetchQuestions() {
 }
 
 onMounted(async () => {
-  if (!authStore.isLoggedIn) {
+  if (!authStore.isLoggedIn || authStore.userRole !== 'Behandelaar') {
     router.push('/login');
     return;
   }

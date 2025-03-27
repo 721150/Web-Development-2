@@ -21,8 +21,10 @@ function handleLogout() {
       <nav class="nav nav-pills container d-flex flex-wrap justify-content-center mt-3">
         <RouterLink to="/legalInfo" class="nav-link" active-class="active">Informatie</RouterLink>
         <RouterLink to="/blogs" class="nav-link" active-class="active">Blogs</RouterLink>
-        <RouterLink to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
-        <RouterLink to="/account" class="nav-link" active-class="active">Account</RouterLink>
+        <RouterLink v-if="authStore.userRole === `Beheerder`" to="/manage-accounts" class="nav-link" active-class="active">Beheer accounts</RouterLink>
+        <RouterLink v-if="authStore.userRole === `Behandelaar`" to="/caselist" class="nav-link" active-class="active">Casussen</RouterLink>
+        <RouterLink v-if="authStore.userRole === `Indiener`" to="/contact" class="nav-link" active-class="active">Contact</RouterLink>
+        <RouterLink v-if="authStore.isLoggedIn" to="/account" class="nav-link" active-class="active">Account</RouterLink>
         <button v-if="authStore.isLoggedIn" @click="handleLogout" class="nav-link btn btn-link">Uitloggen</button>
         <RouterLink v-else to="/login" class="nav-link" active-class="active">Inloggen</RouterLink>
       </nav>
