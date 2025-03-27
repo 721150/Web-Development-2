@@ -125,6 +125,10 @@ function closeSuccessModal() {
 }
 
 function goToAccount() {
+  if (authStore.userRole === "Beheerder") {
+    router.push("/manage-accounts");
+    return;
+  }
   router.push('/account');
 }
 </script>
@@ -162,7 +166,7 @@ function goToAccount() {
       <CheckboxGroupField v-if="role === 'handler'" label="Soort recht" v-model="user.typeOfLaws" :options="dataStore.typeOfLaws" />
       <CheckboxGroupField v-if="role === 'handler'" label="Onderwerp" v-model="user.subjects" :options="dataStore.subjects" />
 
-      <button type="submit" class="btn btn-success">Create User</button>
+      <button type="submit" class="btn btn-success mb-5">Create User</button>
     </form>
     <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
     <UserModal :showModal="showSuccessModal" :createdUser="createdUser" @close="closeSuccessModal" @goToAccount="goToAccount" />

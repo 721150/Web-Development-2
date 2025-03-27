@@ -62,7 +62,7 @@ async function fetchData() {
       isApplicant.value = true;
       applicantEducation.value = profileResponse.data.education.id;
       userId.value = profileResponse.data.userId;
-      const response = await axios.get(`/cases/user/${userId.value}`);
+      const response = await axios.get(`/cases/user/${id.value}`);
       cases.value = response.data;
 
       openQuestions.value = cases.value.filter(c => c.status === 'Open' || c.status === 'In behandeling');
@@ -111,8 +111,8 @@ function getData(institutionName, educationName) {
 
 async function updateProfile() {
   try {
-    const institutionName = dataStore.institutions.value.find(inst => inst.id === parseInt(institution.value));
-    const educationName = dataStore.educations.value.find(edu => edu.id === parseInt(applicantEducation.value));
+    const institutionName = dataStore.institutions.find(inst => inst.id === parseInt(institution.value));
+    const educationName = dataStore.educations.find(edu => edu.id === parseInt(applicantEducation.value));
 
     const data = getData(institutionName, educationName);
 
@@ -216,8 +216,8 @@ function closeSuccessModal() {
     </div>
 
     <div class="d-flex gap-2 mt-4">
-      <button class="btn btn-success" @click="updateProfile">Gegevens Bijwerken</button>
-      <button class="btn btn-danger" @click="deleteProfile">Profiel Verwijderen</button>
+      <button class="btn btn-success mb-4" @click="updateProfile">Gegevens Bijwerken</button>
+      <button class="btn btn-danger mb-4" @click="deleteProfile">Profiel Verwijderen</button>
     </div>
 
     <QuestionList v-if="openQuestions.length > 0" title="Openstaande Vragen" :questions="openQuestions" :viewDossier="viewDossier" />

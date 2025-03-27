@@ -63,7 +63,6 @@ async function submitForm() {
 
   try {
     const caseData = getData();
-
     const response = await axios.post('/cases', caseData, {
       headers: {
         'Content-Type': 'multipart/form-data',

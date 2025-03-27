@@ -98,8 +98,8 @@ async function updateStatus() {
         'Content-Type': 'application/json'
       }
     });
-    newCase.value = response;
-    showSuccessModal.value = true;
+    message.value = "Status aangepast: " + response.data.status;
+    showConfirmModal.value = true;
   } catch (error) {
     if (error.response) {
       errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
