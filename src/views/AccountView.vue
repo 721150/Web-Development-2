@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '@/axios-auth.js';
 import InputField from '../components/InputField.vue';
 import QuestionList from '../components/QuestionList.vue';
@@ -190,12 +190,16 @@ function closeErrorModal() {
 function closeSuccessModal() {
   showSuccessModal.value = false;
 }
+
+const imageUrl = computed(() => {
+  return image.value || placeholderImage;
+});
 </script>
 
 <template>
   <div class="container mt-5">
     <h2>Mijn Gegevens</h2>
-    <img :src="image || placeholderImage" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
+    <img :src="imageUrl" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
     <input type="file" @change="handleImageUpload" class="form-control mb-3" accept="image/*">
     <InputField label="Voornaam" v-model="firstname" placeholder="Voornaam" />
     <InputField label="Achternaam" v-model="lastname" placeholder="Achternaam" />

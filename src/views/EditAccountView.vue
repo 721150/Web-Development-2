@@ -23,7 +23,6 @@ const institution = ref('');
 const phone = ref('');
 const image = ref('');
 const userId = ref('');
-const placeholderImage = 'src/assets/placeholder.jpg';
 
 const errorMessage = ref('');
 const showErrorModal = ref(false);
@@ -164,7 +163,8 @@ function toUserList() {
 <template>
   <div class="container mt-5">
     <h2>Gebruikersgegevens bewerken</h2>
-    <img :src="image || placeholderImage" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
+    <img v-if="image" :src="image" alt="Profielfoto" class="img-thumbnail rounded-circle mb-3 profile-image" />
+    <p v-else>Afbeelding</p>
     <input type="file" @change="handleImageUpload" class="form-control mb-3" accept="image/*">
     <InputField label="Voornaam" v-model="firstname" placeholder="Voornaam" />
     <InputField label="Achternaam" v-model="lastname" placeholder="Achternaam" />
