@@ -6,16 +6,20 @@ import { useRouter } from "vue-router";
 import axios from "@/axios-auth.js";
 import ErrorModal from "@/components/ErrorModal.vue";
 import CasusModal from "@/components/CasusModal.vue";
+import SuccessModal from "@/components/SuccessModal.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
 
 const request = ref([]);
 const newCase = ref(null);
+const newCommunication = ref(null);
 
 const errorMessage = ref('');
 const showErrorModal = ref(false);
 const showSuccessModal = ref(false);
+const showConfirmModal = ref(false);
+const message = ref("");
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
@@ -106,12 +110,38 @@ async function updateStatus() {
   }
 }
 
+async function sendResponse() {
+  try {
+    const dossierId = router.currentRoute.value.params.id;
+    const makeCommunication = {
+      handler: authStore.userId,
+      content: newCommunication.value,
+      caseId: dossierId
+    };
+
+    const response = await axios.post(`/communications`, makeCommunication);
+    message.value = "Antwoord verzonden: " + response.data.content;
+    showConfirmModal.value = true;
+  } catch (error) {
+    if (error.response) {
+      errorMessage.value = `Fout: ${error.response.status} - ${error.response.data.errorMessage}`;
+    } else {
+      errorMessage.value = 'Er is een fout opgetreden bij het bijwerken van de status.';
+    }
+    showErrorModal.value = true;
+  }
+}
+
 function closeErrorModal() {
   showErrorModal.value = false;
 }
 
 function closeSuccessModal() {
   showSuccessModal.value = false;
+}
+
+function closeConfirmModal() {
+  showConfirmModal.value = false;
 }
 </script>
 
@@ -147,10 +177,10 @@ function closeSuccessModal() {
       </div>
     </div>
     <div v-if="authStore.userRole === `Behandelaar`">
-      <h1>Antwoord Schrijven</h1>
-      <div class="card mb-3">
+      <h1 v-if="!request.communicationHandler">Antwoord Schrijven</h1>
+      <div v-if="!request.communicationHandler" class="card mb-3">
         <div class="card-body">
-          <textarea v-model="request.newResponse" class="form-control" rows="5"></textarea>
+          <textarea v-model="newCommunication" class="form-control" rows="5"></textarea>
           <button @click="sendResponse" class="btn btn-success mt-3">Verstuur antwoord</button>
         </div>
       </div>
@@ -169,6 +199,7 @@ function closeSuccessModal() {
   </div>
   <ErrorModal :showModal="showErrorModal" :errorMessage="errorMessage" @close="closeErrorModal" />
   <CasusModal :showModal="showSuccessModal" :caseData="newCase" @close="closeSuccessModal" />
+  <SuccessModal :showModal="showConfirmModal" :message="message" @close="closeConfirmModal" />
 </template>
 
 <style scoped>
