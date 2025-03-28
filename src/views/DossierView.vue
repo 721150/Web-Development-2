@@ -21,12 +21,7 @@ const showSuccessModal = ref(false);
 const showConfirmModal = ref(false);
 const message = ref("");
 
-onMounted(async () => {
-  if (!authStore.isLoggedIn) {
-    router.push('/login');
-    return;
-  }
-
+async function frechData() {
   try {
     const dossierId = router.currentRoute.value.params.id;
     const response = await axios.get(`/cases/case/${dossierId}`);
@@ -65,6 +60,15 @@ onMounted(async () => {
     }
     showErrorModal.value = true;
   }
+}
+
+onMounted(async () => {
+  if (!authStore.isLoggedIn) {
+    router.push('/login');
+    return;
+  }
+
+  await frechData();
 });
 
 async function updateStatus() {
@@ -121,6 +125,7 @@ async function sendResponse() {
     };
 
     const response = await axios.post(`/communications`, makeCommunication);
+    await frechData();
     message.value = "Antwoord verzonden: " + response.data.content;
     showConfirmModal.value = true;
   } catch (error) {

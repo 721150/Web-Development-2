@@ -156,7 +156,7 @@ function goToAccount() {
 
       <div class="mb-3">
         <label for="image" class="form-label">Image:</label>
-        <input type="file" @change="handleFileUpload" class="form-control" />
+        <input type="file" @change="handleFileUpload" class="form-control" accept="image/*" />
       </div>
 
       <div v-if="role === 'applicant'" class="mb-3">
